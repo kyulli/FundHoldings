@@ -1,0 +1,22 @@
+# Data files — never commit raw holdings data
+*.csv
+*.xlsx
+*.xls
+
+# Outputs
+flagged_missing_fields.csv
+*.png
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+venv/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
