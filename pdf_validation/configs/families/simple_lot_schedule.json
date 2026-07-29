@@ -1,0 +1,154 @@
+{
+  "template_id": "simple_lot_schedule",
+  "template_version": "1.0.0-family",
+  "template_family": "simple_lot_schedule",
+  "parser_version": "0.1.0",
+  "output_schema_version": "1.0.0",
+  "comparison_grain": "company",
+  "document": {
+    "fund_name_expected": null,
+    "report_type_expected": "Unaudited financial statements",
+    "as_of_date_expected": null,
+    "currency_expected": "USD",
+    "unit_expected": "ones",
+    "audit_status_expected": "Unaudited"
+  },
+  "pages": {
+    "cover": 1,
+    "statement_of_assets": 2,
+    "schedule_of_investments": [4],
+    "statement_of_operations": 5,
+    "statement_of_changes": 6,
+    "schedule_of_realized": null
+  },
+  "camelot": {
+    "flavor": "stream",
+    "strip_text": "\n",
+    "split_text": true,
+    "parallel": false,
+    "investments": {
+      "pages": "4",
+      "table_areas": ["20,40,770,560"],
+      "columns": ["220,310,400,520,640,760"],
+      "expected_columns": 7,
+      "column_names": [
+        "company_name",
+        "date",
+        "shares",
+        "cost",
+        "fair_value",
+        "unrealized_gain_loss",
+        "cost_per_share"
+      ]
+    },
+    "realized": {
+      "pages": "",
+      "table_areas": [],
+      "columns": [],
+      "expected_columns": 0,
+      "column_names": []
+    },
+    "statement_of_assets": {
+      "pages": "2",
+      "table_areas": null,
+      "columns": null
+    }
+  },
+  "pdfplumber": {
+    "investments": {
+      "pages": [4],
+      "crop_bbox": [20, 80, 780, 560],
+      "table_settings": {
+        "vertical_strategy": "explicit",
+        "horizontal_strategy": "text",
+        "explicit_vertical_lines": [20, 220, 310, 400, 520, 640, 760, 780],
+        "text_x_tolerance": 3,
+        "text_y_tolerance": 3,
+        "intersection_tolerance": 5
+      }
+    },
+    "realized": {
+      "pages": [],
+      "crop_bbox": [20, 80, 780, 560],
+      "table_settings": {
+        "vertical_strategy": "explicit",
+        "horizontal_strategy": "text",
+        "explicit_vertical_lines": [20, 780],
+        "text_x_tolerance": 3,
+        "text_y_tolerance": 3
+      }
+    }
+  },
+  "headers": {
+    "investments_required": [
+      "Investment, at fair value",
+      "Invt. date",
+      "Shares (#)",
+      "Cost",
+      "Fair value",
+      "Unrealized gain (loss)"
+    ],
+    "realized_required": [],
+    "header_token_patterns": [
+      "investment",
+      "invt. date",
+      "shares",
+      "cost",
+      "fair value",
+      "unrealized"
+    ],
+    "ignore_row_patterns": [
+      "^unrealized$",
+      "^asset type$",
+      "^preferred stock$",
+      "^total$"
+    ]
+  },
+  "row_classification": {
+    "date_pattern": "^\\d{1,2}/\\d{1,2}/\\d{4}$",
+    "grand_total_company_tokens": ["", "total"],
+    "currency_tokens": ["$"],
+    "dash_tokens": ["-", "—", "–", "$-", "$ -"],
+    "blank_tokens": ["", "nan", "none"]
+  },
+  "field_semantics": {
+    "cost": {"dash_means": "zero"},
+    "fair_value": {"dash_means": "zero"},
+    "unrealized_gain_loss": {"dash_means": "zero"},
+    "shares": {"dash_means": "not_disclosed"},
+    "cost_per_share": {"dash_means": "not_disclosed"},
+    "fmv_per_share": {"dash_means": "not_disclosed"}
+  },
+  "reconciliation": {
+    "tolerance_absolute": "1",
+    "tolerance_reason": "Allow $1 rounding",
+    "golden_required": false,
+    "statement_of_assets": {
+      "investments_fair_value": null,
+      "investments_cost": null,
+      "net_realized_gain_loss": null,
+      "net_unrealized_appreciation": null
+    },
+    "golden_schedule_investments": {
+      "cost": null,
+      "fair_value": null,
+      "unrealized_gain_loss": null
+    },
+    "golden_schedule_realized": {
+      "cost": null,
+      "cash_proceeds": null,
+      "realized_gain_loss": null
+    }
+  },
+  "cross_page": {"continuation_companies": []},
+  "metadata_patterns": {
+    "fund_name": "Imaginary Venture Capital Partners IV,?\\s*L\\.?P\\.?",
+    "report_type": "Unaudited financial statements",
+    "as_of_date": "March\\s+31,\\s*2026",
+    "audit_status": "Unaudited",
+    "currency_hint_tokens": ["$"],
+    "unit_hint": "ones"
+  },
+  "prefer_text_fallback": true,
+  "template_family": "simple_lot_schedule"
+}

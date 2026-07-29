@@ -1,0 +1,372 @@
+{
+  "mapping_id": "A0d2a71_2025-09-30_SYN_Ventures_Fund_II_LP_-_Q3_2025_Financ_vendor",
+  "mapping_version": "1.2.0",
+  "pdf_template_id": "syn_ventures_fund_ii_q3_2025",
+  "vendor_csv_expected_schema_notes": "Anonymized Brown holdings extract; fund identity is Fund Allocator ID only.",
+  "comparability": {
+    "fund_identity": {
+      "pdf_fund_name_field": "fund_name",
+      "vendor_fund_id_field": "Fund Allocator ID",
+      "vendor_fund_id": "A0d2a71",
+      "vendor_manager_id": "A6a0407",
+      "vendor_fund_name_field": null,
+      "require_explicit_fund_id": true,
+      "allow_fuzzy_name_match_to_confirm": false,
+      "identity_confirmation_note": "User-provided Fund Allocator ID A0d2a71 for SYN Ventures Fund II Q3 2025."
+    },
+    "as_of_date": {
+      "pdf_field": "as_of_date",
+      "vendor_field": "As At Date",
+      "pdf_normalized_expected": "2025-09-30",
+      "vendor_raw_expected": "30-Sep-25",
+      "vendor_date_formats": [
+        "%d-%b-%y",
+        "%d-%b-%Y",
+        "%Y-%m-%d"
+      ],
+      "require_exact_match": true
+    },
+    "currency": {
+      "pdf_field": "currency",
+      "vendor_field": "Reporting Currency",
+      "require_both_disclosed": true,
+      "waiver": {
+        "enabled": true,
+        "assumed_value": "USD",
+        "reason": "User-linked fund A0d2a71. PDF shows $ only; vendor Reporting Currency is blank for all A0d2a71 rows. Proceed under explicit USD assumption."
+      }
+    },
+    "unit": {
+      "pdf_field": "unit",
+      "vendor_field": "Reporting Currency Unit",
+      "require_both_disclosed": true,
+      "waiver": {
+        "enabled": true,
+        "assumed_value": "ones",
+        "reason": "PDF does not state thousands/millions; vendor unit companion field blank; amounts align at ones scale for A0d2a71."
+      },
+      "notes": "PDF does not disclose thousands/millions; vendor Unit columns are often empty companion fields."
+    },
+    "grain": {
+      "pdf_comparison_grain": "company",
+      "vendor_comparison_grain": "source_asset_row",
+      "pdf_entity_field": "company_name",
+      "vendor_entity_field": "Source Asset",
+      "allow_automatic_entity_confirmation": false,
+      "fuzzy_candidate_generation": true,
+      "exclude_vendor_source_asset_regex": "(?i)^Non-Investment\\b"
+    }
+  },
+  "entity_mappings": [
+    {
+      "pdf_company_name": "Aiceberg, Inc",
+      "vendor_source_asset": "Aiceberg, Inc.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "Apollo Information Systems Corp.",
+      "vendor_source_asset": "Apollo Information Systems Corp.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "BreachRX,Inc",
+      "vendor_source_asset": "BreachRX,Inc",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "Crash Override, Inc.",
+      "vendor_source_asset": "Crash Override, Inc.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "Miggo Security Ltd.",
+      "vendor_source_asset": "Miggo Security Ltd.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "Mitigia Security Inc.",
+      "vendor_source_asset": "Mitigia Security Inc.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "NetFoundry, Inc",
+      "vendor_source_asset": "NetFoundry, Inc",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "Oomnitza, Inc.",
+      "vendor_source_asset": "Oomnitza, Inc.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company",
+      "pdf_realized_company_name": "Oomnitz"
+    },
+    {
+      "pdf_company_name": "P0 Security, Inc",
+      "vendor_source_asset": "P0 Security, Inc",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "Predmiya Inc. (dba BeforeAI, Inc.)",
+      "vendor_source_asset": "Predmiya",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "RegScale, Inc.",
+      "vendor_source_asset": "RegScale, Inc.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "Revic AI Inc.",
+      "vendor_source_asset": "Revic AI Inc.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": "Synqly, Inc",
+      "vendor_source_asset": "Synqly, Inc",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company"
+    },
+    {
+      "pdf_company_name": null,
+      "pdf_realized_company_name": "Paladin Data Insurance Corp.",
+      "vendor_source_asset": "Paladin Data Insurance Corp.",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company",
+      "notes": "realized-only / fully exited candidate"
+    },
+    {
+      "pdf_company_name": null,
+      "pdf_realized_company_name": "Talon Cyber Security",
+      "vendor_source_asset": "Talon Cyber Security",
+      "confirmation": "exact_or_alias",
+      "confirmed": true,
+      "entity_grain": "company",
+      "notes": "realized-only / fully exited candidate"
+    }
+  ],
+  "amount_fields": [
+    {
+      "logical_field": "current_cost",
+      "pdf_metric": "current_cost",
+      "pdf_source_field": "current_cost_source",
+      "vendor_field": "Current Cost",
+      "mapping_type": "exact",
+      "tolerance_absolute": "1",
+      "notes": "PDF investments Cost (remaining) == CSV Current Cost."
+    },
+    {
+      "logical_field": "unrealized_value",
+      "pdf_metric": "unrealized_value",
+      "pdf_source_field": "unrealized_value_source",
+      "vendor_field": "Unrealized Value",
+      "mapping_type": "exact",
+      "tolerance_absolute": "1",
+      "notes": "PDF investments Fair Value (remaining) == CSV Unrealized Value."
+    },
+    {
+      "logical_field": "realized_cost",
+      "pdf_metric": "realized_cost",
+      "pdf_source_field": "realized_cost_source",
+      "vendor_field": "Realized Cost",
+      "mapping_type": "exact",
+      "tolerance_absolute": "1",
+      "notes": "Sum of PDF realized-schedule Cost == CSV Realized Cost."
+    },
+    {
+      "logical_field": "realized_proceeds",
+      "pdf_metric": "realized_proceeds",
+      "pdf_source_field": "realized_proceeds_source",
+      "vendor_field": "Realized Proceeds",
+      "mapping_type": "exact",
+      "tolerance_absolute": "1",
+      "notes": "Sum of PDF realized-schedule Cash Proceeds == CSV Realized Proceeds."
+    },
+    {
+      "logical_field": "capital_invested",
+      "pdf_metric": "capital_invested",
+      "pdf_source_field": "capital_invested_source",
+      "vendor_field": "Capital Invested",
+      "mapping_type": "derived",
+      "tolerance_absolute": "1",
+      "notes": "Dictionary: Capital Invested = Current Cost + Realized Cost."
+    },
+    {
+      "logical_field": "total_value",
+      "pdf_metric": "total_value",
+      "pdf_source_field": "total_value_source",
+      "vendor_field": "Total Value",
+      "mapping_type": "derived",
+      "tolerance_absolute": "1",
+      "notes": "Dictionary: Total Value = Unrealized Value + Realized Proceeds."
+    }
+  ],
+  "field_dictionary": [
+    {
+      "attribute_class": "portfolio_company",
+      "logical_field": "portfolio_company_name",
+      "pdf_field": "company_name",
+      "pdf_location": "Schedule of Investments",
+      "vendor_field": "Source Asset",
+      "mapping_type": "approximate",
+      "comparison_grain": "company",
+      "notes": "Explicit entity_mappings required; fuzzy match only creates candidates."
+    },
+    {
+      "attribute_class": "portfolio_company",
+      "logical_field": "sector",
+      "pdf_field": null,
+      "pdf_location": null,
+      "vendor_field": "Sector",
+      "mapping_type": "not_disclosed",
+      "comparison_grain": "company",
+      "notes": "SYN sample PDF Schedule of Investments does not disclose sector."
+    },
+    {
+      "attribute_class": "portfolio_company",
+      "logical_field": "industry",
+      "pdf_field": null,
+      "pdf_location": null,
+      "vendor_field": "Sector Level 2",
+      "mapping_type": "not_disclosed",
+      "comparison_grain": "company",
+      "notes": "Not disclosed in SYN investments schedule."
+    },
+    {
+      "attribute_class": "portfolio_company",
+      "logical_field": "geography",
+      "pdf_field": null,
+      "pdf_location": null,
+      "vendor_field": "Geographic Focus",
+      "mapping_type": "not_disclosed",
+      "comparison_grain": "company",
+      "notes": "Not disclosed in SYN investments schedule."
+    },
+    {
+      "attribute_class": "portfolio_company",
+      "logical_field": "company_description",
+      "pdf_field": null,
+      "pdf_location": null,
+      "vendor_field": "Business Description",
+      "mapping_type": "not_disclosed",
+      "comparison_grain": "company",
+      "notes": "Not disclosed in SYN investments schedule."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "current_cost",
+      "pdf_field": "current_cost",
+      "pdf_location": "Schedule of Investments Cost (remaining) / assumed 0 if fully exited",
+      "vendor_field": "Current Cost",
+      "mapping_type": "exact",
+      "comparison_grain": "company",
+      "notes": "Dictionary-aligned: remaining PDF Cost == Current Cost."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "unrealized_value",
+      "pdf_field": "unrealized_value",
+      "pdf_location": "Schedule of Investments Fair Value / assumed 0 if fully exited",
+      "vendor_field": "Unrealized Value",
+      "mapping_type": "exact",
+      "comparison_grain": "company",
+      "notes": "Dictionary-aligned: remaining PDF Fair Value == Unrealized Value."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "capital_invested",
+      "pdf_field": "capital_invested",
+      "pdf_location": "derived: current_cost + realized_cost",
+      "vendor_field": "Capital Invested",
+      "mapping_type": "derived",
+      "comparison_grain": "company",
+      "notes": "Dictionary: Capital Invested = Current Cost + Realized Cost."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "realized_proceeds",
+      "pdf_field": "realized_proceeds",
+      "pdf_location": "Schedule of Realized Gain/(Loss) Cash Proceeds sum",
+      "vendor_field": "Realized Proceeds",
+      "mapping_type": "exact",
+      "comparison_grain": "company",
+      "notes": "Company-level sum of realized lots."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "total_value",
+      "pdf_field": "total_value",
+      "pdf_location": "derived: unrealized_value + realized_proceeds",
+      "vendor_field": "Total Value",
+      "mapping_type": "derived",
+      "comparison_grain": "company",
+      "notes": "Dictionary: Total Value = Unrealized Value + Realized Proceeds."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "deal_status",
+      "pdf_field": "deal_status_derived",
+      "pdf_location": "derived from dictionary Current/Partial/Full rules",
+      "vendor_field": "Deal Status",
+      "mapping_type": "derived",
+      "comparison_grain": "company",
+      "notes": "PDF does not report Deal Status; compare dictionary-derived status only."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "ownership_percentage",
+      "pdf_field": null,
+      "pdf_location": null,
+      "vendor_field": "Primary Ownership Percentage",
+      "mapping_type": "not_disclosed",
+      "comparison_grain": "company",
+      "notes": "Not disclosed in SYN investments schedule."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "as_of_date",
+      "pdf_field": "as_of_date",
+      "pdf_location": "Cover / schedule headers",
+      "vendor_field": "As At Date",
+      "mapping_type": "exact",
+      "comparison_grain": "fund",
+      "notes": "Must match exactly before amount comparison."
+    },
+    {
+      "attribute_class": "fund_investment",
+      "logical_field": "reporting_currency",
+      "pdf_field": "currency",
+      "pdf_location": "Statement currency symbol only ($)",
+      "vendor_field": "Reporting Currency",
+      "mapping_type": "ambiguous",
+      "comparison_grain": "fund",
+      "notes": "Compared only under explicit waiver assuming USD."
+    }
+  ],
+  "extraction_mode": "position_level",
+  "has_realized_schedule": true
+}

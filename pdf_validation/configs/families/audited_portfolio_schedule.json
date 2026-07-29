@@ -1,0 +1,111 @@
+{
+  "template_id": "audited_portfolio_schedule",
+  "template_version": "1.0.0-family",
+  "template_family": "audited_portfolio_schedule",
+  "parser_version": "0.1.0",
+  "output_schema_version": "1.0.0",
+  "comparison_grain": "company",
+  "document": {
+    "fund_name_expected": "SYN Ventures Fund II, LP",
+    "report_type_expected": "Audited Financial Statements",
+    "as_of_date_expected": null,
+    "currency_expected": "USD",
+    "unit_expected": "ones",
+    "audit_status_expected": "Audited"
+  },
+  "pages": {
+    "cover": 1,
+    "statement_of_assets": 2,
+    "schedule_of_investments": [],
+    "schedule_of_realized": null
+  },
+  "camelot": {
+    "flavor": "stream",
+    "strip_text": "\n",
+    "split_text": true,
+    "parallel": false,
+    "investments": {
+      "pages": "",
+      "table_areas": [],
+      "columns": [],
+      "expected_columns": 6,
+      "column_names": [
+        "company_name",
+        "industry",
+        "geography",
+        "shares",
+        "cost",
+        "fair_value"
+      ]
+    },
+    "realized": {
+      "pages": "",
+      "table_areas": [],
+      "columns": [],
+      "expected_columns": 0,
+      "column_names": []
+    },
+    "statement_of_assets": {"pages": "2", "table_areas": null, "columns": null}
+  },
+  "pdfplumber": {
+    "investments": {
+      "pages": [],
+      "crop_bbox": [20, 80, 780, 720],
+      "table_settings": {
+        "vertical_strategy": "explicit",
+        "horizontal_strategy": "text",
+        "explicit_vertical_lines": [20, 280, 380, 470, 560, 650, 760, 780],
+        "text_x_tolerance": 3,
+        "text_y_tolerance": 3
+      }
+    },
+    "realized": {
+      "pages": [],
+      "crop_bbox": [20, 80, 780, 720],
+      "table_settings": {
+        "vertical_strategy": "explicit",
+        "horizontal_strategy": "text",
+        "explicit_vertical_lines": [20, 780],
+        "text_x_tolerance": 3,
+        "text_y_tolerance": 3
+      }
+    }
+  },
+  "headers": {
+    "investments_required": ["Portfolio Investments", "Industry", "Country", "Shares", "Cost", "Fair Value"],
+    "realized_required": [],
+    "header_token_patterns": ["portfolio", "industry", "country", "shares", "cost", "fair value", "unrealized"],
+    "ignore_row_patterns": ["^balances carried forward$", "^confidential$"]
+  },
+  "row_classification": {
+    "date_pattern": "^\\d{1,2}/\\d{1,2}/\\d{4}$",
+    "grand_total_company_tokens": ["", "total"],
+    "currency_tokens": ["$"],
+    "dash_tokens": ["-", "—", "–"],
+    "blank_tokens": ["", "nan", "none"]
+  },
+  "field_semantics": {
+    "cost": {"dash_means": "zero"},
+    "fair_value": {"dash_means": "zero"},
+    "unrealized_gain_loss": {"dash_means": "zero"},
+    "shares": {"dash_means": "not_disclosed"}
+  },
+  "reconciliation": {
+    "tolerance_absolute": "1",
+    "golden_required": false,
+    "statement_of_assets": {},
+    "golden_schedule_investments": {},
+    "golden_schedule_realized": {}
+  },
+  "cross_page": {"continuation_companies": []},
+  "metadata_patterns": {
+    "fund_name": "SYN Ventures Fund II",
+    "report_type": "Financial Statements",
+    "as_of_date": "(December|December)\\s+31,\\s*\\d{4}",
+    "audit_status": "Independent Auditor",
+    "currency_hint_tokens": ["$"],
+    "unit_hint": "ones"
+  },
+  "prefer_text_fallback": true,
+  "template_family": "audited_portfolio_schedule"
+}

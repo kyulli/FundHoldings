@@ -1,0 +1,193 @@
+{
+  "template_id": "syn_ventures_fund_ii_q3_2025",
+  "template_version": "1.0.0",
+  "parser_version": "0.1.0",
+  "output_schema_version": "1.0.0",
+  "document": {
+    "fund_name_expected": "SYN Ventures Fund II, LP",
+    "report_type_expected": "Combined Unaudited Financial Statements",
+    "as_of_date_expected": "2025-09-30",
+    "currency_expected": "USD",
+    "unit_expected": "ones",
+    "audit_status_expected": "Unaudited"
+  },
+  "pages": {
+    "cover": 1,
+    "statement_of_assets": 2,
+    "schedule_of_investments": [3, 4, 5],
+    "statement_of_operations": 6,
+    "statement_of_changes": 7,
+    "schedule_of_realized": 8
+  },
+  "camelot": {
+    "flavor": "stream",
+    "strip_text": "\n",
+    "split_text": true,
+    "parallel": false,
+    "investments": {
+      "pages": "3-5",
+      "table_areas": ["30,50,1050,700"],
+      "columns": ["250,360,500,575,655,740,830,940"],
+      "expected_columns": 9,
+      "column_names": [
+        "company_name",
+        "date",
+        "round",
+        "shares",
+        "cost_per_share",
+        "fmv_per_share",
+        "cost",
+        "fair_value",
+        "unrealized_gain_loss"
+      ]
+    },
+    "realized": {
+      "pages": "8",
+      "table_areas": ["20,50,900,620"],
+      "columns": ["180,250,320,450,545,640,735"],
+      "expected_columns": 8,
+      "column_names": [
+        "company",
+        "purchase_date",
+        "exit_date",
+        "transaction",
+        "cost",
+        "cash_proceeds",
+        "escrow_receivable",
+        "realized_gain_loss"
+      ]
+    },
+    "statement_of_assets": {
+      "pages": "2",
+      "table_areas": null,
+      "columns": null
+    }
+  },
+  "pdfplumber": {
+    "investments": {
+      "pages": [3, 4, 5],
+      "crop_bbox": [30, 120, 1050, 780],
+      "table_settings": {
+        "vertical_strategy": "explicit",
+        "horizontal_strategy": "text",
+        "explicit_vertical_lines": [30, 250, 360, 500, 575, 655, 740, 830, 940, 1050],
+        "text_x_tolerance": 3,
+        "text_y_tolerance": 3,
+        "intersection_tolerance": 5
+      }
+    },
+    "realized": {
+      "pages": [8],
+      "crop_bbox": [20, 140, 900, 720],
+      "table_settings": {
+        "vertical_strategy": "explicit",
+        "horizontal_strategy": "text",
+        "explicit_vertical_lines": [20, 180, 250, 320, 450, 545, 640, 735, 900],
+        "text_x_tolerance": 3,
+        "text_y_tolerance": 3
+      }
+    }
+  },
+  "headers": {
+    "investments_required": [
+      "Company Name",
+      "Date",
+      "Round",
+      "# Shares",
+      "Cost/Share",
+      "FMV/Share",
+      "Cost",
+      "Fair Value",
+      "Gain/(Loss)"
+    ],
+    "realized_required": [
+      "Company",
+      "Date",
+      "Exit Date",
+      "Transaction",
+      "Cost",
+      "Cash Proceeds",
+      "Receivable",
+      "Gain/(Loss)"
+    ],
+    "header_token_patterns": [
+      "company name",
+      "company",
+      "# shares",
+      "cost/share",
+      "fmv/share",
+      "fair value",
+      "gain/(loss)",
+      "cash proceeds",
+      "exit date",
+      "transaction"
+    ],
+    "ignore_row_patterns": [
+      "^september\\s+30,\\s*2025$",
+      "^unrealized$",
+      "^purchase$",
+      "^escrow$",
+      "^total realized$"
+    ]
+  },
+  "row_classification": {
+    "date_pattern": "^\\d{1,2}/\\d{1,2}/\\d{4}$",
+    "grand_total_company_tokens": ["", "total"],
+    "currency_tokens": ["$"],
+    "dash_tokens": ["-", "—", "–", "$-", "$ -"],
+    "blank_tokens": ["", "nan", "none"]
+  },
+  "field_semantics": {
+    "cost": {"dash_means": "zero"},
+    "fair_value": {"dash_means": "zero"},
+    "unrealized_gain_loss": {"dash_means": "zero"},
+    "shares": {"dash_means": "not_disclosed"},
+    "cost_per_share": {"dash_means": "not_disclosed"},
+    "fmv_per_share": {"dash_means": "not_disclosed"},
+    "cash_proceeds": {"dash_means": "zero"},
+    "escrow_receivable": {"dash_means": "zero"},
+    "realized_gain_loss": {"dash_means": "zero"}
+  },
+  "reconciliation": {
+    "tolerance_absolute": "1",
+    "tolerance_reason": "Allow up to $1 PDF rounding difference from share-price × share-count display precision and whole-dollar schedule presentation",
+    "statement_of_assets": {
+      "investments_fair_value": "207461318",
+      "investments_cost": "177475405",
+      "net_realized_gain_loss": "-2010029",
+      "net_unrealized_appreciation": "29985913"
+    },
+    "golden_schedule_investments": {
+      "cost": "177475405",
+      "fair_value": "207461318",
+      "unrealized_gain_loss": "29985913"
+    },
+    "golden_schedule_realized": {
+      "cost": "21000000",
+      "cash_proceeds": "18989970",
+      "realized_gain_loss": "-2010029"
+    }
+  },
+  "cross_page": {
+    "continuation_companies": [
+      {
+        "company_name": "Miggo Security Ltd.",
+        "starts_on_page": 3,
+        "subtotal_on_page": 4
+      },
+      {
+        "company_name": "Predmiya Inc. (dba BeforeAI, Inc.)",
+        "starts_on_page": 4,
+        "subtotal_on_page": 5
+      }
+    ]
+  },
+  "metadata_patterns": {
+    "fund_name": "SYN Ventures Fund II,\\s*LP",
+    "report_type": "COMBINED\\s+UNAUDITED\\s+FINANCIAL\\s+STATEMENTS",
+    "as_of_date": "September\\s+30,\\s*2025",
+    "audit_status": "UNAUDITED",
+    "currency_hint_tokens": ["$"],
+    "unit_hint": "ones"
+  }
+}
