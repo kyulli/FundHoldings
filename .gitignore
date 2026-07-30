@@ -6,6 +6,9 @@
 # Outputs
 flagged_missing_fields.csv
 *.png
+pdf_validation/outputs/
+pdf_validation/.venv/
+pdf_validation/.pytest_cache/
 
 # Python
 __pycache__/

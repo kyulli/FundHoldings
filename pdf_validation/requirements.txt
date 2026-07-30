@@ -1,0 +1,15 @@
+# Pinned after successful SYN Ventures Fund II Q3 2025 extraction + golden tests
+# on Python 3.12.8 (conda-forge / miniforge). Do not bump without re-running golden tests.
+camelot-py==2.0.0
+pdfplumber==0.11.10
+pandas==3.0.5
+openpyxl==3.1.5
+pytest==9.1.1
+pypdf==6.14.2
+pdfminer.six==20260107
+numpy==2.5.1
+pypdfium2==5.12.1
+opencv-python-headless==5.0.0.93
+pillow==12.3.0
+playa-pdf==1.1.0
+tabulate==0.10.0

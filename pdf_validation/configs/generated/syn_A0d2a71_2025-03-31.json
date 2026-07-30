@@ -1,0 +1,264 @@
+{
+  "template_id": "syn_A0d2a71_2025-03-31",
+  "template_version": "1.0.0-batch",
+  "parser_version": "0.1.0",
+  "output_schema_version": "1.0.0",
+  "document": {
+    "fund_name_expected": "SYN Ventures Fund II, LP",
+    "report_type_expected": "Combined Unaudited Financial Statements",
+    "as_of_date_expected": "2025-03-31",
+    "currency_expected": "USD",
+    "unit_expected": "ones",
+    "audit_status_expected": "Unaudited"
+  },
+  "pages": {
+    "cover": 1,
+    "statement_of_assets": 2,
+    "schedule_of_investments": [
+      3,
+      4
+    ],
+    "statement_of_operations": 6,
+    "statement_of_changes": 7,
+    "schedule_of_realized": 7
+  },
+  "camelot": {
+    "flavor": "stream",
+    "strip_text": "\n",
+    "split_text": true,
+    "parallel": false,
+    "investments": {
+      "pages": "3-4",
+      "table_areas": [
+        "10,30,787.0,572.0"
+      ],
+      "columns": [
+        "159.0,263.3,341.4,412.4,473.1,536.6,602.0,677.0"
+      ],
+      "expected_columns": 9,
+      "column_names": [
+        "company_name",
+        "date",
+        "round",
+        "shares",
+        "cost_per_share",
+        "fmv_per_share",
+        "cost",
+        "fair_value",
+        "unrealized_gain_loss"
+      ]
+    },
+    "realized": {
+      "pages": "7",
+      "table_areas": [
+        "10,30,787.0,572.0"
+      ],
+      "columns": [
+        "144.0,200.0,256.0,360.0,436.0,537.0,588.0"
+      ],
+      "expected_columns": 8,
+      "column_names": [
+        "company",
+        "purchase_date",
+        "exit_date",
+        "transaction",
+        "cost",
+        "cash_proceeds",
+        "escrow_receivable",
+        "realized_gain_loss"
+      ]
+    },
+    "statement_of_assets": {
+      "pages": "2",
+      "table_areas": null,
+      "columns": null
+    }
+  },
+  "pdfplumber": {
+    "investments": {
+      "pages": [
+        3,
+        4
+      ],
+      "crop_bbox": [
+        10,
+        91.799955,
+        787.0,
+        581.9997
+      ],
+      "table_settings": {
+        "vertical_strategy": "explicit",
+        "horizontal_strategy": "text",
+        "explicit_vertical_lines": [
+          10.0,
+          158.95263,
+          263.30436,
+          341.41743,
+          412.4157,
+          473.08365000000003,
+          536.62692,
+          601.98795,
+          676.9734599999999,
+          787.0
+        ],
+        "text_x_tolerance": 3,
+        "text_y_tolerance": 3,
+        "intersection_tolerance": 5
+      }
+    },
+    "realized": {
+      "pages": [
+        7
+      ],
+      "crop_bbox": [
+        10,
+        110.15994599999999,
+        787.0,
+        581.9997
+      ],
+      "table_settings": {
+        "vertical_strategy": "explicit",
+        "horizontal_strategy": "text",
+        "explicit_vertical_lines": [
+          10.0,
+          144.0,
+          200.0,
+          256.0,
+          360.0,
+          436.0,
+          537.0,
+          588.0,
+          787.0
+        ],
+        "text_x_tolerance": 3,
+        "text_y_tolerance": 3
+      }
+    }
+  },
+  "headers": {
+    "investments_required": [
+      "Company Name",
+      "Date",
+      "Round",
+      "# Shares",
+      "Cost/Share",
+      "FMV/Share",
+      "Cost",
+      "Fair Value",
+      "Gain/(Loss)"
+    ],
+    "realized_required": [
+      "Company",
+      "Date",
+      "Exit Date",
+      "Transaction",
+      "Cost",
+      "Cash Proceeds",
+      "Receivable",
+      "Gain/(Loss)"
+    ],
+    "header_token_patterns": [
+      "company name",
+      "company",
+      "# shares",
+      "cost/share",
+      "fmv/share",
+      "fair value",
+      "gain/(loss)",
+      "cash proceeds",
+      "exit date",
+      "transaction"
+    ],
+    "ignore_row_patterns": [
+      "^march\\\\s+31,\\\\s*2025$",
+      "^unrealized$",
+      "^purchase$",
+      "^escrow$",
+      "^total realized$"
+    ]
+  },
+  "row_classification": {
+    "date_pattern": "^\\d{1,2}/\\d{1,2}/\\d{4}$",
+    "grand_total_company_tokens": [
+      "",
+      "total"
+    ],
+    "currency_tokens": [
+      "$"
+    ],
+    "dash_tokens": [
+      "-",
+      "\u2014",
+      "\u2013",
+      "$-",
+      "$ -"
+    ],
+    "blank_tokens": [
+      "",
+      "nan",
+      "none"
+    ]
+  },
+  "field_semantics": {
+    "cost": {
+      "dash_means": "zero"
+    },
+    "fair_value": {
+      "dash_means": "zero"
+    },
+    "unrealized_gain_loss": {
+      "dash_means": "zero"
+    },
+    "shares": {
+      "dash_means": "not_disclosed"
+    },
+    "cost_per_share": {
+      "dash_means": "not_disclosed"
+    },
+    "fmv_per_share": {
+      "dash_means": "not_disclosed"
+    },
+    "cash_proceeds": {
+      "dash_means": "zero"
+    },
+    "escrow_receivable": {
+      "dash_means": "zero"
+    },
+    "realized_gain_loss": {
+      "dash_means": "zero"
+    }
+  },
+  "reconciliation": {
+    "tolerance_absolute": "1",
+    "tolerance_reason": "Allow up to $1 PDF rounding difference from share-price \u00d7 share-count display precision and whole-dollar schedule presentation",
+    "statement_of_assets": {
+      "investments_fair_value": "139668429",
+      "investments_cost": "119933951",
+      "net_realized_gain_loss": "-2101776",
+      "net_unrealized_appreciation": "19734478"
+    },
+    "golden_schedule_investments": {
+      "cost": "119933951",
+      "fair_value": "139668429",
+      "unrealized_gain_loss": "19734478"
+    },
+    "golden_schedule_realized": {
+      "cost": "0",
+      "cash_proceeds": "0",
+      "realized_gain_loss": "-2101776"
+    }
+  },
+  "cross_page": {
+    "continuation_companies": []
+  },
+  "metadata_patterns": {
+    "fund_name": "SYN Ventures Fund II,\\s*LP",
+    "report_type": "COMBINED\\s+UNAUDITED\\s+FINANCIAL\\s+STATEMENTS",
+    "as_of_date": "March\\s+31,\\s*2025",
+    "audit_status": "UNAUDITED",
+    "currency_hint_tokens": [
+      "$"
+    ],
+    "unit_hint": "ones"
+  }
+}

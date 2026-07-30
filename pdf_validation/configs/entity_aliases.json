@@ -1,0 +1,25 @@
+{
+  "global": {
+    "aiceberg inc": "Aiceberg, Inc.",
+    "cranium ai inc": "Cranium Al, Inc",
+    "predmiya beforeai": "Predmiya",
+    "predmiya inc dba beforeai inc": "Predmiya",
+    "squarex holdings inc": "SquareX",
+    "oomnitz": "Oomnitza, Inc.",
+    "oomnitza inc": "Oomnitza, Inc.",
+    "mitigia security inc": "Mitigia Security Inc.",
+    "house of home ab": "House of Home AB (Nordic Knots)",
+    "nordic knots": "House of Home AB (Nordic Knots)",
+    "waymo llc series c": "Waymo LLC",
+    "alphabet cla": "Alphabet CLA"
+  },
+  "by_fund": {
+    "A0d2a71": {},
+    "Aa7f6d4": {
+      "house of home ab": "House of Home AB (Nordic Knots)"
+    },
+    "A729d8b": {
+      "waymo llc series c": "Waymo LLC"
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "registry_version": "1.0.0",
+  "document_classes": {
+    "investor_letter": {
+      "extraction_mode": "blocked_narrative",
+      "signals_any": [
+        "investor letter",
+        "a note from",
+        "dear limited partners",
+        "letter to investors"
+      ],
+      "require_no_schedule": true
+    },
+    "financial_statements_with_schedule": {
+      "extraction_mode": "position_level",
+      "schedule_title_patterns": [
+        "schedule of investments",
+        "schedule of investment",
+        "schedule of portfolio investments",
+        "combined schedule of portfolio investments",
+        "condensed schedule of investments"
+      ]
+    },
+    "financial_statements_aggregate_only": {
+      "extraction_mode": "fund_aggregate_only",
+      "signals_any": [
+        "statement of financial condition",
+        "statement of assets",
+        "investments, at fair value"
+      ],
+      "require_no_schedule": true
+    },
+    "unknown": {
+      "extraction_mode": "manual_review"
+    }
+  },
+  "template_families": {
+    "vc_lot_schedule": {
+      "base_config": "configs/families/vc_lot_schedule.json",
+      "header_fingerprint_any": [
+        "company name",
+        "cost/share",
+        "fmv/share",
+        "# shares",
+        "round"
+      ],
+      "min_fingerprint_hits": 3,
+      "schedule_titles": ["schedule of investments"],
+      "realized_titles": ["schedule of realized"],
+      "comparison_grain": "company",
+      "default_fund_hints": ["syn ventures"]
+    },
+    "simple_lot_schedule": {
+      "base_config": "configs/families/simple_lot_schedule.json",
+      "header_fingerprint_any": [
+        "invt. date",
+        "shares (#)",
+        "cost/share",
+        "fair value/share",
+        "unrealized gain (loss)"
+      ],
+      "min_fingerprint_hits": 3,
+      "schedule_titles": ["schedule of investment", "schedule of investments"],
+      "realized_titles": [],
+      "comparison_grain": "company",
+      "default_fund_hints": ["imaginary venture"]
+    },
+    "audited_portfolio_schedule": {
+      "base_config": "configs/families/audited_portfolio_schedule.json",
+      "header_fingerprint_any": [
+        "portfolio investments",
+        "industry",
+        "country",
+        "net unrealized",
+        "shares or principal"
+      ],
+      "min_fingerprint_hits": 3,
+      "schedule_titles": [
+        "schedule of investments",
+        "combined schedule of portfolio investments",
+        "schedule of portfolio investments"
+      ],
+      "realized_titles": [],
+      "comparison_grain": "company",
+      "default_fund_hints": ["syn ventures"],
+      "require_audit_signal": true
+    },
+    "condensed_hedge_schedule": {
+      "base_config": "configs/families/condensed_hedge_schedule.json",
+      "header_fingerprint_any": [
+        "condensed schedule",
+        "% of partners' capital",
+        "number of shares",
+        "fair value"
+      ],
+      "min_fingerprint_hits": 2,
+      "schedule_titles": ["condensed schedule of investments"],
+      "realized_titles": [],
+      "comparison_grain": "mixed_condensed",
+      "default_fund_hints": ["perry creek"]
+    },
+    "generic_holdings_schedule": {
+      "base_config": "configs/families/generic_holdings_schedule.json",
+      "header_fingerprint_any": [],
+      "min_fingerprint_hits": 99,
+      "schedule_titles": [
+        "schedule of investments",
+        "schedule of investment",
+        "schedule of portfolio investments",
+        "combined schedule of portfolio investments"
+      ],
+      "realized_titles": [
+        "statement of net realized",
+        "schedule of realized"
+      ],
+      "comparison_grain": "company",
+      "default_fund_hints": [],
+      "fallback_only": true
+    }
+  },
+  "header_aliases": {
+    "entity_name": [
+      "company name",
+      "company",
+      "investment",
+      "investment, at fair value",
+      "investments",
+      "portfolio company"
+    ],
+    "investment_date": [
+      "date",
+      "invt. date",
+      "invt date",
+      "purchase date",
+      "investment date"
+    ],
+    "security_description": [
+      "round",
+      "security",
+      "transaction",
+      "asset type",
+      "preference shares"
+    ],
+    "shares": [
+      "# shares",
+      "shares (#)",
+      "shares",
+      "number of shares",
+      "shares or principal"
+    ],
+    "cost_per_share": ["cost/share", "cost / share", "cost per share"],
+    "fmv_per_share": [
+      "fmv/share",
+      "fv/share",
+      "fair value/share",
+      "fair value / share",
+      "fv / share"
+    ],
+    "cost": ["cost", "current cost", "x cost"],
+    "fair_value": [
+      "fair value",
+      "fmv",
+      "estimated fair value",
+      "fairvalue"
+    ],
+    "unrealized_gain_loss": [
+      "gain/(loss)",
+      "unrealized gain (loss)",
+      "unrealized gain/(loss)",
+      "net unrealized appreciation (depreciation)",
+      "net unrealized"
+    ],
+    "pct_of_capital": [
+      "% of partners' capital",
+      "% of net assets",
+      "percent of partners' capital"
+    ],
+    "industry": ["industry", "sector"],
+    "geography": ["country", "geography"]
+  }
+}
