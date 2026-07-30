@@ -140,7 +140,36 @@ Always include:
 - `inference_evidence`
 - `inference_confidence`
 
-This phase does not populate inferred status.
+### Inference rules
+
+Deal Status is not reported directly in the PDF. It is derived by cross-referencing the
+two financial schedules using canonical company names resolved via `entity_aliases.json`.
+
+| Company appears in | Inferred Deal Status |
+|---|---|
+| Schedule of Investments only, FMV/Cost >= 0.25 | `Current` |
+| Schedule of Investments only, FMV/Cost < 0.25 | `Written Down` |
+| Schedule of Investments only, FMV = 0 | `Written Off` |
+| Both schedules, remaining FMV/Cost >= 0.25 | `Partially Exited` |
+| Both schedules, remaining FMV/Cost < 0.25 or FMV = 0 | `Partially Exited, Remainder Written Down` |
+| Schedule of Realized only | `Fully Exited` |
+
+The Written Down threshold is 0.25 (FMV less than 25% of Cost). This is configurable.
+
+### Entity resolution requirement
+
+Company names frequently differ between the two schedules due to abbreviations or
+typographic variants in the source PDF (e.g. "Oomnitz" in Schedule of Realized vs
+"Oomnitza, Inc." in Schedule of Investments). Canonical name resolution via
+`entity_aliases.json` must be applied before cross-referencing.
+
+### Implementation
+
+Deal Status inference is implemented in `src/pdf_validation/deal_status.py` and called
+from `pipeline.py` after `company_summary` is finalised:
+
+- `infer_deal_statuses()` — populates `deal_status_inferred` in `company_summary`
+- `infer_realized_deal_statuses()` — populates `deal_status_inferred` in `realized_lots`
 
 ## Outputs
 

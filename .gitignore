@@ -3,6 +3,9 @@
 *.xlsx
 *.xls
 
+# PDF sample data — confidential, do not commit
+sample_data/
+
 # Outputs
 flagged_missing_fields.csv
 *.png

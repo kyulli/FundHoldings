@@ -90,12 +90,13 @@ def parse_fund_aggregate(pdf_path: Path | str, max_pages: int = 6) -> dict[str, 
 
         for idx, page in enumerate(doc.pages[:max_pages]):
             text = page.extract_text() or ""
-            # Allow spaces inside numbers: 1 34,505,967
-            patterns = [
-                r"Investments?, at fair value\s*\(cost[:\s]*\$?\s*([0-9,\s]+)\)\s*\$?\s*([0-9,\s]+)",
-                r"Investment, at fair value\s*\(cost\s*\$?\s*([0-9,\s]+)\)\s*\$?\s*([0-9,\s]+)",
+            # Pattern 1: single-line format
+            #   Investments, at fair value (Cost $X) $Y
+            patterns_single = [
+                r"Investments?, at (?:estimated\s+)?fair value\s*\(cost[:\s=]*\$?\s*([0-9,\s]+)\)\s*\$?\s*([0-9,\s]+)",
+                r"Investment, at (?:estimated\s+)?fair value\s*\(cost\s*\$?\s*([0-9,\s]+)\)\s*\$?\s*([0-9,\s]+)",
             ]
-            for pattern in patterns:
+            for pattern in patterns_single:
                 match = re.search(pattern, text, flags=re.I)
                 if match:
                     cost = _clean_num(match.group(1))
@@ -103,6 +104,27 @@ def parse_fund_aggregate(pdf_path: Path | str, max_pages: int = 6) -> dict[str, 
                     source_page = idx + 1
                     raw_line = match.group(0)
                     break
+
+            # Pattern 2: two-line format
+            #   Investments, at estimated fair value  $ 207,461,318
+            #   (Cost equal to $177,475,405 at ...)
+            if not (cost and fair_value):
+                m_fv = re.search(
+                    r"Investments?, at (?:estimated\s+)?fair value\s*\$?\s*([0-9,\s]+)",
+                    text,
+                    flags=re.I,
+                )
+                m_cost = re.search(
+                    r"\(Cost equal to\s*\$?\s*([0-9,]+)",
+                    text,
+                    flags=re.I,
+                )
+                if m_fv and m_cost:
+                    fair_value = _clean_num(m_fv.group(1))
+                    cost = _clean_num(m_cost.group(1))
+                    source_page = idx + 1
+                    raw_line = m_fv.group(0) + " / " + m_cost.group(0)
+
             if cost and fair_value:
                 break
 

@@ -15,6 +15,7 @@ from pdf_validation.metadata import extract_metadata
 from pdf_validation.parser_decisions import decide_parsers
 from pdf_validation.parser_selector import select_extraction_path
 from pdf_validation.pdfplumber_fallback import extract_pdfplumber_tables
+from pdf_validation.deal_status import infer_deal_statuses, infer_realized_deal_statuses
 from pdf_validation.reconciliation import run_reconciliation
 from pdf_validation.statement_parser import parse_fund_aggregate
 from pdf_validation.template_builder import build_config_from_route, write_generated_config
@@ -273,6 +274,22 @@ def run_extract(
     # Annotate grain defaults.
     for row in company_summary:
         row.setdefault("entity_grain", "company")
+
+    # Infer Deal Status by cross-referencing Schedule of Investments and Schedule of Realized.
+    realized_lots_for_ds = realized_classified["realized_lots"]
+    fund_id = (config.get("route") or {}).get("fund_id") or (route or {}).get("fund_id")
+    company_summary = infer_deal_statuses(
+        company_summary,
+        realized_lots_for_ds,
+        fund_id=fund_id,
+    )
+    realized_lots_with_ds = infer_realized_deal_statuses(
+        realized_lots_for_ds,
+        company_summary,
+        fund_id=fund_id,
+    )
+    realized_classified = dict(realized_classified)
+    realized_classified["realized_lots"] = realized_lots_with_ds
 
     parser_decisions = decide_parsers(
         camelot_raw=camelot_raw,

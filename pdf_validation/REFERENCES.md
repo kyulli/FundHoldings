@@ -279,7 +279,49 @@ SHA-256 values must be calculated from the actual PDF and configuration file byt
 
 ---
 
-## 9. Implementation constraints
+## 9. Deal Status inference
+
+Deal Status is not a field reported in the PDF. It must be inferred by cross-referencing
+the Schedule of Investments and the Schedule of Realized Gain/(Loss).
+
+### Authoritative Deal Status vocabulary
+
+The following are the only valid inferred values, aligned with the vendor CSV:
+
+- `Current`
+- `Written Down`
+- `Written Off`
+- `Partially Exited`
+- `Partially Exited, Remainder Written Down`
+- `Fully Exited`
+
+Do not use non-standard terms such as "invested/unrealized", "partially realized",
+or "fully realized". These do not match the vendor CSV and will cause comparison failures.
+
+### Inference source of truth
+
+The inference rules are derived from the structure of standard private fund financial
+statements, not from any external documentation:
+
+- **Schedule of Investments** (typically pages 3-5) lists currently held positions.
+- **Schedule of Realized Gain/(Loss)** (typically the final schedule) lists positions
+  that have been fully or partially sold.
+
+A company appearing in both schedules must have its names normalized via
+`entity_aliases.json` before cross-referencing. Spelling variants across schedules
+(e.g. "Oomnitz" in Schedule of Realized vs "Oomnitza, Inc." in Schedule of Investments)
+are a known data quality issue in source PDFs and must be handled by explicit aliases,
+not fuzzy matching.
+
+### Written Down threshold
+
+The threshold for Written Down is FMV/Cost < 0.25. This is stored in
+`deal_status.py` as `WRITTEN_DOWN_RATIO` and may be adjusted after consultation
+with the Investment Office. Do not hard-code the threshold in tests.
+
+---
+
+## 10. Implementation constraints
 
 The implementation must follow these rules even when parser documentation offers a more automatic alternative:
 
