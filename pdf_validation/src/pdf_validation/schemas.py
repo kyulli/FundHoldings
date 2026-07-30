@@ -40,6 +40,7 @@ ENTITY_GRAINS = (
 
 EXTRACTION_MODES = (
     "position_level",
+    "position_level_inferred",
     "fund_aggregate_only",
     "blocked_narrative",
     "manual_review",

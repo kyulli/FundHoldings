@@ -159,6 +159,21 @@ def evaluate_gates(
                 "blocks_amount_comparison": True,
             }
         )
+    elif extraction_mode == "position_level_inferred":
+        eq_status = eq.get("status")
+        gates.append(
+            {
+                "gate": "extraction_quality",
+                "status": "FAIL" if eq_status in {None, "FAIL", "REVIEW_REQUIRED", "BLOCKED"} else "PASS",
+                "extraction_mode": extraction_mode,
+                "selected_parser": eq.get("selected_parser"),
+                "reason": (
+                    eq.get("reason")
+                    or "Inferred schema extraction requires approved mapping before amount comparison."
+                ),
+                "blocks_amount_comparison": True,
+            }
+        )
     elif extraction_mode == "fund_aggregate_only":
         agg_ok = bool(fund_aggregate and fund_aggregate.get("parse_status") == "ok")
         gates.append(

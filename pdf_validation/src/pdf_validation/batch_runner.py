@@ -68,11 +68,16 @@ def _run_one(pdf: Path, fund_id: str) -> dict[str, Any]:
         "status": "ran",
     }
 
-    if mode in {"blocked_narrative", "manual_review"}:
-        result["comparability_status"] = "not_comparable"
+    if mode in {"blocked_narrative", "manual_review", "position_level_inferred"}:
+        result["comparability_status"] = "not_comparable" if mode != "position_level_inferred" else "needs_review"
         result["match"] = 0
         result["mismatch"] = 0
         result["blocked_reason"] = mode
+        result["onboarding_status"] = (payload.get("onboarding_summary") or {}).get("onboarding_status")
+        result["compare_allowed"] = False
+        if mode == "position_level_inferred":
+            result["inferred_schema"] = (payload.get("route") or {}).get("inferred_schema")
+            result["status"] = "discover_only"
         return result
 
     mapping = _base_mapping_for_fund(fund_id)

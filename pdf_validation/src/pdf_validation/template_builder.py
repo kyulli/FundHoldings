@@ -47,6 +47,18 @@ def build_config_from_route(
         "header": layout.get("header"),
     }
 
+    inferred = route.get("inferred_schema") or {}
+    if inferred:
+        cfg["inferred_schema"] = inferred
+        if inferred.get("column_names"):
+            cfg["camelot"]["investments"]["column_names"] = list(inferred["column_names"])
+            cfg["camelot"]["investments"]["expected_columns"] = len(inferred["column_names"])
+        if inferred.get("comparison_grain"):
+            cfg["comparison_grain"] = inferred["comparison_grain"]
+        if inferred.get("company_row_headers"):
+            cfg["prefer_text_fallback"] = True
+            cfg["row_classification"]["mode"] = "dynamic_column_map"
+
     inv_pages = layout.get("inv_pages") or route.get("schedule_pages") or []
     real_pages = layout.get("real_pages") or route.get("realized_pages") or []
     cfg["pages"]["schedule_of_investments"] = inv_pages
@@ -56,11 +68,23 @@ def build_config_from_route(
         page_expr = f"{inv_pages[0]}-{inv_pages[-1]}" if len(inv_pages) > 1 else str(inv_pages[0])
         cfg["camelot"]["investments"]["pages"] = page_expr
         cfg["camelot"]["investments"]["table_areas"] = [layout["inv_area"]]
-        cfg["camelot"]["investments"]["columns"] = [layout["inv_cols"]]
+        # Prefer inferred separators when available.
+        if inferred.get("separators") and len(inferred["separators"]) >= 2:
+            seps = inferred["separators"]
+            inv_cols = ",".join(f"{s:.1f}" for s in seps)
+            cfg["camelot"]["investments"]["columns"] = [inv_cols]
+            page_w = layout["inv_page_size"][0]
+            cfg["pdfplumber"]["investments"]["table_settings"]["explicit_vertical_lines"] = [
+                10.0,
+                *seps,
+                page_w - 5,
+            ]
+        else:
+            cfg["camelot"]["investments"]["columns"] = [layout["inv_cols"]]
+            cfg["pdfplumber"]["investments"]["table_settings"]["explicit_vertical_lines"] = layout["inv_vlines"]
         cfg["pdfplumber"]["investments"]["pages"] = inv_pages
         iw, ih = layout["inv_page_size"]
         cfg["pdfplumber"]["investments"]["crop_bbox"] = [10, min(120, ih * 0.15), iw - 5, ih - 30]
-        cfg["pdfplumber"]["investments"]["table_settings"]["explicit_vertical_lines"] = layout["inv_vlines"]
 
     if real_pages and layout.get("real_cols"):
         cfg["camelot"]["realized"]["pages"] = str(real_pages[0])

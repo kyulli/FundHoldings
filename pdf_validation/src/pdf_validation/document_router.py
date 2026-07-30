@@ -54,6 +54,9 @@ def _fingerprint_hits(text: str, fingerprints: list[str]) -> list[str]:
 
 
 def _has_audit_signal(text: str) -> bool:
+    # Avoid matching the substring inside "unaudited financial statements".
+    if "unaudited" in text and "independent auditor" not in text and "report of independent" not in text:
+        return False
     return any(
         token in text
         for token in (
@@ -153,6 +156,8 @@ def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> di
         reasons.append(f"schedule_pages={schedule_pages}")
         family_scores: list[tuple[int, str, list[str]]] = []
         for family_id, family in registry["template_families"].items():
+            if family.get("fallback_only"):
+                continue
             hits = _fingerprint_hits(text, family["header_fingerprint_any"])
             score = len(hits)
             if family.get("require_audit_signal") and not (_has_audit_signal(text) or "audited" in filename or "afs" in filename):
@@ -190,6 +195,35 @@ def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> di
                 "aggregate_fallback_available": True,
             }
         reasons.append("schedule_found_but_family_unmapped")
+        from pdf_validation.schema_inference import infer_schema
+
+        inferred = infer_schema(pdf_path, schedule_pages=schedule_pages, registry=registry)
+        reasons.append(f"inferred_confidence={inferred.get('inference_confidence')}")
+        reasons.append(f"inferred_columns={inferred.get('logical_columns')}")
+        can_infer = (
+            inferred.get("found")
+            and float(inferred.get("inference_confidence") or 0) >= 0.55
+            and not inferred.get("missing_required")
+        )
+        if can_infer:
+            reasons.append("generic_schema_inference")
+            return {
+                "document_class": "financial_statements_with_schedule",
+                "template_family": "generic_holdings_schedule",
+                "extraction_mode": "position_level_inferred",
+                "schedules_detected": ["investments"],
+                "schedule_pages": schedule_pages,
+                "realized_pages": [],
+                "as_of_date": _detect_as_of(text),
+                "comparison_grain": inferred.get("comparison_grain") or "company",
+                "base_config": "configs/families/generic_holdings_schedule.json",
+                "inferred_schema": inferred,
+                "reasons": reasons,
+                "confidence": float(inferred.get("inference_confidence") or 0.55),
+                "aggregate_fallback_available": True,
+                "onboarding_status": "inferred_ready",
+                "compare_allowed": False,
+            }
         return {
             "document_class": "financial_statements_with_schedule",
             "template_family": None,
@@ -198,9 +232,12 @@ def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> di
             "schedule_pages": schedule_pages,
             "realized_pages": [],
             "as_of_date": _detect_as_of(text),
+            "inferred_schema": inferred,
             "reasons": reasons,
-            "confidence": 0.4,
+            "confidence": float(inferred.get("inference_confidence") or 0.4),
             "aggregate_fallback_available": True,
+            "onboarding_status": "needs_review",
+            "compare_allowed": False,
         }
 
     # Aggregate-only financials (Perry quarterlies).

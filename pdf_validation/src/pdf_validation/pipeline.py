@@ -229,9 +229,14 @@ def run_extract(
     company_summary = selected["company_summary"]
     reconciliation = selected["reconciliation"]
 
-    # Prefer text companies for families that opt in (Imaginary / shattered / condensed / audited).
+    # Prefer text companies for families that opt in, or inferred schemas.
     family = config.get("template_family")
-    if config.get("prefer_text_fallback") or family in {"condensed_hedge_schedule", "audited_portfolio_schedule"}:
+    inferred = config.get("inferred_schema") or (route or {}).get("inferred_schema") or {}
+    if config.get("prefer_text_fallback") or family in {
+        "condensed_hedge_schedule",
+        "audited_portfolio_schedule",
+        "generic_holdings_schedule",
+    }:
         inv_pages = config.get("pages", {}).get("schedule_of_investments") or []
         if family == "condensed_hedge_schedule":
             from pdf_validation.text_fallback import parse_condensed_positions_from_text
@@ -241,15 +246,28 @@ def run_extract(
             from pdf_validation.text_fallback import parse_audited_portfolio_from_text
 
             text_companies = parse_audited_portfolio_from_text(pdf_path, inv_pages)
+        elif inferred or family == "generic_holdings_schedule":
+            from pdf_validation.generic_schedule import parse_inferred_schedule_companies
+
+            text_companies = parse_inferred_schedule_companies(
+                pdf_path,
+                inv_pages,
+                inferred_schema=inferred,
+            )
         else:
             text_companies = parse_company_subtotals_from_text(pdf_path, inv_pages)
         if text_companies:
             company_summary = text_companies
             selected["selected_parser"] = "text_fallback"
             selected["extraction_quality"] = {
-                "status": "PASS",
+                "status": "REVIEW_REQUIRED" if inferred or family == "generic_holdings_schedule" else "PASS",
                 "selected_parser": "text_fallback",
-                "reason": "Family prefers text fallback for reliable company Cost/FV.",
+                "reason": (
+                    "Schema-inferred schedule extraction; vendor amount comparison requires approved mapping."
+                    if inferred or family == "generic_holdings_schedule"
+                    else "Family prefers text fallback for reliable company Cost/FV."
+                ),
+                "company_count": len(text_companies),
             }
 
     # Annotate grain defaults.
@@ -320,5 +338,46 @@ def run_extract(
     )
     if fund_aggregate:
         (output_dir / "fund_aggregate.json").write_text(json.dumps(fund_aggregate, indent=2), encoding="utf-8")
+    if route:
+        (output_dir / "route.json").write_text(json.dumps(route, indent=2), encoding="utf-8")
+        inferred = route.get("inferred_schema")
+        if inferred:
+            (output_dir / "schema_inference.json").write_text(json.dumps(inferred, indent=2), encoding="utf-8")
+        onboarding = {
+            "onboarding_status": route.get("onboarding_status")
+            or (
+                "inferred_ready"
+                if route.get("extraction_mode") == "position_level_inferred"
+                else "known_family"
+            ),
+            "compare_allowed": bool(route.get("compare_allowed", route.get("extraction_mode") == "position_level")),
+            "extraction_mode": route.get("extraction_mode"),
+            "template_family": route.get("template_family"),
+            "route_confidence": route.get("confidence"),
+            "inference_confidence": (inferred or {}).get("inference_confidence") if inferred else None,
+            "company_count": len(company_summary),
+            "selected_parser": selected.get("selected_parser"),
+            "extraction_quality": selected.get("extraction_quality"),
+            "review_tasks": [],
+        }
+        if route.get("extraction_mode") == "position_level_inferred":
+            onboarding["review_tasks"] = [
+                {
+                    "task_id": "confirm_inferred_schema",
+                    "severity": "high",
+                    "blocking_compare": True,
+                    "summary": "Confirm inferred column mapping before vendor amount comparison.",
+                    "evidence_refs": ["schema_inference.json", "company_summary"],
+                },
+                {
+                    "task_id": "confirm_entity_mappings",
+                    "severity": "high",
+                    "blocking_compare": True,
+                    "summary": "Approve explicit entity aliases for PDF company names vs vendor assets.",
+                },
+            ]
+            onboarding["compare_allowed"] = False
+        (output_dir / "onboarding_summary.json").write_text(json.dumps(onboarding, indent=2), encoding="utf-8")
+        payload["onboarding_summary"] = onboarding
     payload["export_paths"] = {key: str(path) for key, path in export_paths.items()}
     return payload
