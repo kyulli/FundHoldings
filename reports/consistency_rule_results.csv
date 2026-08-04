@@ -1,0 +1,17 @@
+rule,applicable_rows,violations,rate,note
+Capital Invested >= 0,46055,1,0.0,negative value on a quantity that cannot be negative
+Current Cost >= 0,49378,2,0.0,negative value on a quantity that cannot be negative
+"Realized Proceeds < 0 (legitimate under Current, count only)",46464,95,0.2,"permitted by the Current definition; report, do not escalate"
+Initial Investment Date <= As At Date,23852,6,0.03,investment dated after the reporting date
+Total Value == Unrealized + Realized,46577,624,1.34,"accounting identity, 1% relative tolerance"
+Current Cost <= Capital Invested,44687,210,0.47,remaining cost basis exceeds total invested
+Current => Unrealized Value > 0,28381,9,0.03,definition: Current requires positive unrealized value
+Current => Realized Proceeds <= 0 or blank,28381,0,0.0,definition: Current requires non-positive or absent proceeds
+Partially Exited => Unrealized > 0 and Realized > 0,5753,10,0.17,definition: both must be strictly positive
+Fully Exited => Unrealized Value = 0 or blank,10895,0,0.0,residual value on a position reported as closed
+Fully Exited => Realized Proceeds OR Total Value present,10895,0,0.0,disjunctive requirement from the supplied definition
+"Written Off => Unrealized = 0, Realized = 0, Cost = 0 or blank",2478,26,1.05,definition: no remaining value and no remaining cost basis
+"Written Down => Unrealized = 0, Realized = 0, Cost > 0",3096,6,0.19,definition: no remaining value but a remaining cost basis
+Realized Proceeds non-decreasing over time,36901,415,1.12,cumulative quantity decreased; restatement or extraction error
+Capital Invested non-decreasing over time,36648,976,2.66,cumulative quantity decreased; restatement or extraction error
+Deal Status does not regress,41055,300,0.58,a fully exited position reverting to current

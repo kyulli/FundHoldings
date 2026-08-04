@@ -1,0 +1,145 @@
+Fund Allocator ID,Source Asset,first,last,n_periods,expected,gap_periods,cadence
+A82f5de,Derivatives,2024-12-31,2025-12-31,2,5,3,quarterly
+Ae5aac1,HS Investments SEAF 21m Limited,2024-12-31,2025-12-31,2,5,3,quarterly
+A44702b,Deductive AI,2024-12-31,2025-12-31,2,5,3,quarterly
+A680edc,Solidroad,2024-12-31,2026-03-31,3,6,3,quarterly
+A396ea8,HS Investments III Limited,2024-12-31,2025-12-31,2,5,3,quarterly
+Aa5bde6,"Tava Health, Inc.",2024-12-31,2026-03-31,3,6,3,quarterly
+Ae5aac1,HS Investments SEA Fire Limited,2024-12-31,2025-12-31,2,5,3,quarterly
+Ae5aac1,HS Investments SEA Surry Limited,2024-12-31,2025-12-31,2,5,3,quarterly
+A8cbf09,Hunter Communications,2025-03-31,2026-03-31,2,5,3,quarterly
+Ab7dccf,Other Investments,2024-12-31,2025-12-31,2,5,3,quarterly
+A72f874,Wujiexing,2025-06-30,2026-03-31,2,4,2,quarterly
+A74c64f,Maker,2024-12-31,2026-03-31,4,6,2,quarterly
+Aac1486,"Level, Inc.",2024-12-31,2026-03-31,4,6,2,quarterly
+A74c64f,"Primitive Bits, Inc.",2024-12-31,2026-03-31,4,6,2,quarterly
+A72f874,"Lightwheel Al (Beijing) Technology Co., LTD.",2024-12-31,2026-03-31,4,6,2,quarterly
+A74c64f,Skip Protocol Inc.,2024-12-31,2026-03-31,4,6,2,quarterly
+A87a21d,Twin Hospitality LLC,2024-12-31,2025-09-30,2,4,2,quarterly
+A60210b,CI Financial,2024-12-31,2026-03-31,4,6,2,quarterly
+A8b56b9,Sudoswap,2024-12-31,2025-09-30,2,4,2,quarterly
+A7ead5b,"First Eagle Investment Management, LLC",2024-12-31,2026-03-31,4,6,2,quarterly
+A5bfee3,Security Risk Advisors,2024-12-31,2026-03-31,4,6,2,quarterly
+A8b6332,"NP Kaba Holdings, LP",2024-12-31,2026-03-31,4,6,2,quarterly
+A8b56b9,Maker (MKR),2024-12-31,2025-09-30,2,4,2,quarterly
+Afed02f,"Nautic Senderra Rx Investments, LP",2024-12-31,2026-03-31,4,6,2,quarterly
+Aa71003,Parkstone at Indian Land,2024-12-31,2025-12-31,3,5,2,quarterly
+A2a4d74,"Open AI Global, LLC",2024-12-31,2026-03-31,4,6,2,quarterly
+Aa5bde6,"RunBuggy OMI, Inc",2024-12-31,2026-03-31,4,6,2,quarterly
+A29c2b9,"MoboTrex, LLC",2024-12-31,2026-03-31,4,6,2,quarterly
+A4923d3,Lit Communities,2024-12-31,2025-09-30,2,4,2,quarterly
+A2257c0,"First Eagle Investment Management, LLC",2024-12-31,2026-03-31,4,6,2,quarterly
+A4d752f,Security Risk Advisors,2024-12-31,2026-03-31,4,6,2,quarterly
+Aa5bde6,"Reggora, Inc.",2024-12-31,2026-03-31,4,6,2,quarterly
+A19d854,"NP Kaba Holdings, LP",2024-12-31,2026-03-31,4,6,2,quarterly
+A40cc93,"Phylum, Inc.",2024-12-31,2025-12-31,3,5,2,quarterly
+Af4e6f7,"TSRV-A, LLC",2024-12-31,2025-12-31,3,5,2,quarterly
+Afed02f,"NP Kaba Holdings, LP",2024-12-31,2026-03-31,4,6,2,quarterly
+Aaab069,Myers EPS,2024-12-31,2026-03-31,5,6,1,quarterly
+Ab3ea87,SPT Group,2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,Vatus,2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,WSS,2024-12-31,2025-12-31,4,5,1,quarterly
+Aaab069,Mercer,2024-12-31,2026-03-31,5,6,1,quarterly
+Ab3ea87,AGR,2024-12-31,2025-12-31,4,5,1,quarterly
+Aaab069,OptConnect,2024-12-31,2026-03-31,5,6,1,quarterly
+Ab3ea87,Akers/Ampco- Pittsburgh,2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,Relacom (Fund II),2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,PIAB,2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,NorthStar,2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,Lindorff (Fund II),2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,Helly Hansen,2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,Euro Cater,2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,EDS (Fund II),2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,Dustin,2024-12-31,2025-12-31,4,5,1,quarterly
+Aba6caa,"Bird Global, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Ab3ea87,Altor II Holdings Limited,2024-12-31,2025-12-31,4,5,1,quarterly
+Ab3ea87,Constructor,2024-12-31,2025-12-31,4,5,1,quarterly
+Aba6caa,Qubole Inc. (fka Canopy Data Inc.),2024-12-31,2026-03-31,5,6,1,quarterly
+Aba6caa,"Cybereason, Inc.",2024-12-31,2026-03-31,5,6,1,quarterly
+Aba6caa,Metawork Corporation,2025-03-31,2026-03-31,4,5,1,quarterly
+Afed02f,"Nautic Cardinal Aggregator, LP",2024-12-31,2026-03-31,5,6,1,quarterly
+Afed02f,"AccessIT Group Holdings, LLC",2024-12-31,2026-03-31,5,6,1,quarterly
+Af14abd,Other Investments,2025-09-30,2026-03-31,2,3,1,quarterly
+Ad880d6,WizRocket Inc. (dba CleverTap),2025-03-31,2026-03-31,4,5,1,quarterly
+Ad880d6,Veem Inc.,2025-03-31,2026-03-31,4,5,1,quarterly
+Ad880d6,"Trusona, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Ad880d6,Superhuman Platform Inc. (FKA Grammarly),2025-03-31,2026-03-31,4,5,1,quarterly
+Ad880d6,"Ripcord, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Ad880d6,"Qumulo, Inc.",2024-12-31,2026-03-31,5,6,1,quarterly
+Ad880d6,"Mode, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Ad880d6,General Radar Corp.,2025-03-31,2026-03-31,4,5,1,quarterly
+Ad880d6,"Chime Raya Investor Company, LLC",2025-03-31,2026-03-31,4,5,1,quarterly
+Ac58438,"Rubrik, Inc.",2025-03-31,2025-12-31,3,4,1,quarterly
+Abeff42,Grupo Recalvi,2024-12-31,2026-03-31,5,6,1,quarterly
+Abacebf,"thatgamecompany, inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Abacebf,"Spruce Health, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Abacebf,Nuna Incorporated,2025-03-31,2026-03-31,4,5,1,quarterly
+Abacebf,N3twork Studios Inc.,2025-03-31,2026-03-31,4,5,1,quarterly
+Abacebf,"Farmers Business Network, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Abacebf,"Charlie Tango Romeo Holdings, LLC",2025-03-31,2026-03-31,4,5,1,quarterly
+Abacebf,"BetterWorks Systems, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Aba6caa,"Zoba, Inc.",2024-12-31,2026-03-31,5,6,1,quarterly
+Aba6caa,"SignalFx, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Aaab069,Giraffe Foods,2024-12-31,2026-03-31,5,6,1,quarterly
+Aba6caa,"Parabol, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Aba6caa,"Ordway Labs, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+Aba6caa,"Niantic, Inc.",2024-12-31,2026-03-31,5,6,1,quarterly
+Aaab069,Medbio,2024-12-31,2026-03-31,5,6,1,quarterly
+A0e8f48,Memphis Grizzlies,2024-12-31,2026-03-31,5,6,1,quarterly
+Aaab069,DTI,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Yendo,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Xilis,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Vectara,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Strand,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Speakeasy,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,"PsiQuantum, Corp.",2025-03-31,2026-03-31,4,5,1,quarterly
+A5466bf,Other Investments,2025-03-31,2026-03-31,4,5,1,quarterly
+A5466bf,Oath Surgical Inc.,2025-09-30,2026-03-31,2,3,1,quarterly
+A5466bf,Formation Bio,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Enveda,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Cognichip,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Charlie,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,Astra,2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,"Anterior, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+A5466bf,Aibidia,2024-12-31,2026-03-31,5,6,1,quarterly
+A429e54,Ethereum,2024-12-31,2026-03-31,5,6,1,quarterly
+A429e54,Coinbase Global Inc.,2024-12-31,2026-03-31,5,6,1,quarterly
+A2ac14e,Monumental Sports & Entertainment,2025-06-30,2026-03-31,3,4,1,quarterly
+A29c2b9,United States - Diversified Financial Services,2025-03-31,2026-03-31,4,5,1,quarterly
+A29c2b9,"Houseworks Holdings, LLC",2024-12-31,2025-06-30,2,3,1,quarterly
+A29c2b9,"ACP Avenu Buyer, LLC",2024-12-31,2026-03-31,5,6,1,quarterly
+A162a33,Sarku,2025-03-31,2026-03-31,4,5,1,quarterly
+A162a33,Honey Baked Ham,2024-12-31,2026-03-31,5,6,1,quarterly
+A145642,"Shenzhen Houlang into Sea Brand Management Co.,",2024-12-31,2026-03-31,5,6,1,quarterly
+A145642,"Guangdong Dongming wine industry Co., Ltd",2024-12-31,2026-03-31,5,6,1,quarterly
+A124f9d,"Powerset I, L.P.",2024-12-31,2026-03-31,5,6,1,quarterly
+A5466bf,"XperiencOps, Inc",2024-12-31,2026-03-31,5,6,1,quarterly
+A60210b,Babel Group (Babel Tenedora de Participaciones SA),2024-12-31,2026-03-31,5,6,1,quarterly
+Aaab069,BrightPet,2024-12-31,2026-03-31,5,6,1,quarterly
+A72f874,"Ti5robot Technology Shanghai Co., Ltd.",2024-12-31,2026-03-31,5,6,1,quarterly
+Aaab069,Acme Cryogenics,2024-12-31,2026-03-31,5,6,1,quarterly
+Aa5bde6,"RetireGo, Inc. (dba 401Go)",2024-12-31,2026-03-31,5,6,1,quarterly
+Aa5bde6,"CertifID, Inc",2024-12-31,2026-03-31,5,6,1,quarterly
+Aa2c385,Meituan Dianping (HK: 03690),2025-03-31,2026-03-31,4,5,1,quarterly
+A9859d3,NutriMotion PTE.LTD,2025-03-31,2026-03-31,4,5,1,quarterly
+A9859d3,"Hui Ta Li Arts and Crafts (Beijing) Co., Ltd",2025-03-31,2026-03-31,4,5,1,quarterly
+A9859d3,Hangzhou Beauty Secret Brand Management Co. LTD,2025-06-30,2026-03-31,3,4,1,quarterly
+A124f9d,PineGrove Capital Partners I,2024-12-31,2026-03-31,5,6,1,quarterly
+A97e381,Celles,2024-12-31,2025-06-30,2,3,1,quarterly
+A8ff6ae,"Rent The Runway, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+A8ff6ae,"Everlane, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+A8ff6ae,"Datameer, Inc.",2025-03-31,2026-03-31,4,5,1,quarterly
+A8ff6ae,Berzelius (Nanjing) Co. Ltd,2025-03-31,2026-03-31,4,5,1,quarterly
+A8ff6ae,Apex (Wuxi) Co. Ltd.,2025-03-31,2026-03-31,4,5,1,quarterly
+A8b56b9,The Open Network (TON),2024-12-31,2026-03-31,5,6,1,quarterly
+A87a21d,OYO Hotels (Oravel Stays),2024-12-31,2026-03-31,5,6,1,quarterly
+A87a21d,"Fogo de Chao (BCPE Grill Parent, Inc.)",2024-12-31,2026-03-31,5,6,1,quarterly
+A87a21d,Cooper's Hawk Intermediate Holding LLC,2024-12-31,2026-03-31,5,6,1,quarterly
+A87a21d,"Checkers Holdings, Inc.",2024-12-31,2026-03-31,5,6,1,quarterly
+A87a21d,CEC Entertainment,2025-03-31,2026-03-31,4,5,1,quarterly
+A775233,Speedy-Buying Holding Limited,2025-03-31,2026-03-31,4,5,1,quarterly
+A775233,Meituan Dianping,2025-03-31,2026-03-31,4,5,1,quarterly
+A775233,Mag Mode Corporation,2025-03-31,2026-03-31,4,5,1,quarterly
+A775233,Education Index Management Limited,2025-03-31,2026-03-31,4,5,1,quarterly
+A775233,DiDi Global Inc.,2025-03-31,2026-03-31,4,5,1,quarterly
+A9859d3,"Beijing MeiyiLab Co.,Ltd. (MeiYi)",2025-03-31,2026-03-31,4,5,1,quarterly

@@ -1,0 +1,838 @@
+df_attributes
+Investment Manager Allocator ID
+Fund Allocator ID
+Source Asset
+Source Asset ID
+Is Instrument
+Instrument Name
+Instrument ID
+As At Date
+Deal Status
+Asset Status
+Reporting Currency
+Reporting Currency Unit
+Allocator Asset
+Allocator Asset Allocator ID
+Allocator Asset CUSIP
+Allocator Asset ISIN
+Allocator Asset Open FIGI
+Allocator Asset IPO Date
+Allocator Asset Delisting Date
+Allocator Asset IPO Value
+Allocator Asset Address Line 1
+Allocator Asset Address Line 2
+Allocator Asset Address State
+Allocator Asset Address Zip Code
+Allocator Asset Address City
+Allocator Asset Address Country
+Allocator Asset Currency ISO Code
+Allocator Asset Custom ID
+Allocator Asset Website
+Allocator Asset PitchBook ID
+Geographic Focus
+Geography Level 1
+Geography Level 2
+Geography Level 3
+Sector
+Sector Level 1
+Sector Level 2
+Sector Level 3
+NACE Level 3
+NACE Level 4
+TICCS Industrial Classification
+TICCS Business-Risk Classification
+Type of Investment
+Exchange
+Public Market Ticker Selection
+GP Reported Sector
+GP Reported Sector Unit
+GP Reported Geography
+GP Reported Geography Unit
+GP Reported Website
+GP Reported Website Unit
+Instrument Type
+Instrument Type Unit
+New Round Raised
+New Round Raised Unit
+Latest Round
+Latest Round Unit
+Asset Type
+Asset Type Unit
+Commentary
+Commentary Unit
+Business Description
+Business Description Unit
+Operating Status
+Operating Status Unit
+Status
+Status Unit
+Founders
+Founders Unit
+Project Type
+Project Type Source
+Risk Profile
+Sponsor Backed
+Sponsor Backed Unit
+Sponsor Name
+Sponsor Name Unit
+Initial Investment Date
+Initial Investment Date Unit
+Entry Round
+Entry Round Unit
+Initial Investment Stage
+Initial Investment Stage Unit
+Deal Source
+Deal Source Unit
+Exit Date
+Exit Date Unit
+Projected Exit Date
+Projected Exit Date Unit
+Exit Type
+Exit Type Unit
+IPO Date
+IPO Date Unit
+Number of Shares
+Number of Shares Unit
+Primary Ownership Percentage
+Primary Ownership Percentage Unit
+Diluted Ownership Percentage
+Diluted Ownership Percentage Unit
+Shares Outstanding
+Shares Outstanding Unit
+Capital Committed
+Capital Committed Unit
+Paid-In Capital %
+Paid-In Capital % Unit
+Capital Committed QoQ Change
+Capital Committed QoQ Change Unit
+Capital Committed YoY Change
+Capital Committed YoY Change Unit
+Capital Invested
+Capital Invested Unit
+Capital Invested QoQ Change
+Capital Invested QoQ Change Unit
+Capital Invested YoY Change
+Capital Invested YoY Change Unit
+Unfunded Capital Balance
+Unfunded Capital Balance Unit
+Current Cost
+Current Cost Unit
+Current Cost QoQ Change
+Current Cost QoQ Change Unit
+Current Cost YoY Change
+Current Cost YoY Change Unit
+Current Cost Per Share
+Current Cost Per Share Unit
+Realized Cost
+Realized Cost Unit
+Realized Cost QoQ Change
+Realized Cost QoQ Change Unit
+Realized Cost YoY Change
+Realized Cost YoY Change Unit
+QTD Realized Cost
+QTD Realized Cost Unit
+YTD Realized Cost
+YTD Realized Cost Unit
+QTD Realized Gain/Loss
+QTD Realized Gain/Loss Unit
+Realized Gain/Loss QoQ Change
+Realized Gain/Loss QoQ Change Unit
+Realized Gain/Loss YoY Change
+Realized Gain/Loss YoY Change Unit
+Realized Gain/Loss
+Realized Gain/Loss Unit
+YTD Realized Gain/Loss
+YTD Realized Gain/Loss Unit
+Unrealized Value
+Unrealized Value Unit
+Unrealized Value QoQ Change
+Unrealized Value QoQ Change Unit
+Unrealized Value YoY Change
+Unrealized Value YoY Change Unit
+% of NAV
+% of NAV Unit
+Unrealized Value Per Share
+Unrealized Value Per Share Unit
+Unrealized Gain/Loss
+Unrealized Gain/Loss Unit
+Unrealized Gain/Loss QoQ Change
+Unrealized Gain/Loss QoQ Change Unit
+Unrealized Gain/Loss YoY Change
+Unrealized Gain/Loss YoY Change Unit
+Proceeds from Income
+Proceeds from Income Unit
+Dividend Income
+Dividend Income Unit
+Interest Income
+Interest Income Unit
+Proceeds from Disposal
+Proceeds from Disposal Unit
+Proceeds from Recapitalization
+Proceeds from Recapitalization Unit
+Realized Proceeds
+Realized Proceeds Unit
+Realized Proceeds QoQ Change
+Realized Proceeds QoQ Change Unit
+Realized Proceeds YoY Change
+Realized Proceeds YoY Change Unit
+QTD Realized Proceeds
+QTD Realized Proceeds Unit
+YTD Realized Proceeds
+YTD Realized Proceeds Unit
+FX Gain/Loss
+FX Gain/Loss Unit
+Total Value
+Total Value Unit
+Projected Exit Value
+Projected Exit Value Unit
+Total Value QoQ Change
+Total Value QoQ Change Unit
+Total Value YoY Change
+Total Value YoY Change Unit
+Total Gain/Loss
+Total Gain/Loss Unit
+Total Gain/Loss QoQ Change
+Total Gain/Loss QoQ Change Unit
+Total Gain/Loss YoY Change
+Total Gain/Loss YoY Change Unit
+% Remaining NAV
+% Remaining NAV Unit
+Implied Equity Valuation (Ownership %)
+Implied Equity Valuation (Ownership %) Unit
+Implied Equity Valuation (Shares Held)
+Implied Equity Valuation (Shares Held) Unit
+Notional
+Notional Unit
+Implied Capital Invested
+Implied Capital Invested Unit
+Exposed Ownership Percentage
+Exposed Ownership Percentage Unit
+RVPI
+RVPI Unit
+DPI
+DPI Unit
+Gross TVPI
+Gross TVPI Unit
+Projected Gross TVPI
+Projected Gross TVPI Unit
+Calculated TVPI
+Calculated TVPI Unit
+Unhedged TVPI
+Unhedged TVPI Unit
+Gross IRR
+Gross IRR Unit
+Projected Gross IRR
+Projected Gross IRR Unit
+Net TVPI
+Net TVPI Unit
+Projected Net TVPI
+Projected Net TVPI Unit
+Net IRR
+Net IRR Unit
+Projected Net IRR
+Projected Net IRR Unit
+Financial Year End Date
+QTD Net Operating Income
+QTD Net Operating Income Unit
+YTD Net Operating Income
+YTD Net Operating Income Unit
+LTM Net Operating Income
+LTM Net Operating Income Unit
+QTD Net Income
+QTD Net Income Unit
+YTD Net Income
+YTD Net Income Unit
+LTM Net Income
+LTM Net Income Unit
+QTD EBITDA
+QTD EBITDA Unit
+YTD EBITDA
+YTD EBITDA Unit
+LTM EBITDA
+LTM EBITDA Unit
+Pro Forma QTD EBITDA
+Pro Forma QTD EBITDA Unit
+Pro Forma YTD EBITDA
+Pro Forma YTD EBITDA Unit
+Pro Forma LTM EBITDA
+Pro Forma LTM EBITDA Unit
+Adjusted QTD EBITDA
+Adjusted QTD EBITDA Unit
+Adjusted YTD EBITDA
+Adjusted YTD EBITDA Unit
+Adjusted LTM EBITDA
+Adjusted LTM EBITDA Unit
+QTD EBIT
+QTD EBIT Unit
+YTD EBIT
+YTD EBIT Unit
+LTM EBIT
+LTM EBIT Unit
+LTM EBIT YoY % Change
+LTM EBIT YoY % Change Unit
+LTM EBIT 3 Year CAGR
+LTM EBIT 3 Year CAGR Unit
+Pro Forma QTD EBIT
+Pro Forma QTD EBIT Unit
+Pro Forma YTD EBIT
+Pro Forma YTD EBIT Unit
+Pro Forma LTM EBIT
+Pro Forma LTM EBIT Unit
+Pro Forma LTM EBIT YoY % Change
+Pro Forma LTM EBIT YoY % Change Unit
+Pro Forma LTM EBIT 3 Year CAGR
+Pro Forma LTM EBIT 3 Year CAGR Unit
+Adjusted QTD EBIT
+Adjusted QTD EBIT Unit
+Adjusted YTD EBIT
+Adjusted YTD EBIT Unit
+Adjusted LTM EBIT
+Adjusted LTM EBIT Unit
+Adjusted LTM EBIT YoY % Change
+Adjusted LTM EBIT YoY % Change Unit
+Adjusted LTM EBIT 3 Year CAGR
+Adjusted LTM EBIT 3 Year CAGR Unit
+Pro Forma QTD EBITA
+Pro Forma QTD EBITA Unit
+Pro Forma YTD EBITA
+Pro Forma YTD EBITA Unit
+Pro Forma LTM EBITA
+Pro Forma LTM EBITA Unit
+Pro Forma LTM EBITA YoY % Change
+Pro Forma LTM EBITA YoY % Change Unit
+Pro Forma LTM EBITA 3 Year CAGR
+Pro Forma LTM EBITA 3 Year CAGR Unit
+QTD EBITA
+QTD EBITA Unit
+YTD EBITA
+YTD EBITA Unit
+LTM EBITA
+LTM EBITA Unit
+LTM EBITA YoY % Change
+LTM EBITA YoY % Change Unit
+LTM EBITA 3 Year CAGR
+LTM EBITA 3 Year CAGR Unit
+LTM Adjusted EBITA
+LTM Adjusted EBITA Unit
+YTD Adjusted EBITA
+YTD Adjusted EBITA Unit
+QTD Adjusted EBITA
+QTD Adjusted EBITA Unit
+LTM Adjusted EBITA YoY % Change
+LTM Adjusted EBITA YoY % Change Unit
+LTM Adjusted EBITA 3 Year CAGR
+LTM Adjusted EBITA 3 Year CAGR Unit
+LTM EBITDA YoY % Change
+LTM EBITDA YoY % Change Unit
+LTM EBITDA 3 Year CAGR
+LTM EBITDA 3 Year CAGR Unit
+EBITDA Multiple
+EBITDA Multiple Unit
+Pro Forma EBITDA Multiple
+Pro Forma EBITDA Multiple Unit
+Adjusted EBITDA Multiple
+Adjusted EBITDA Multiple Unit
+QTD Net Profit
+QTD Net Profit Unit
+YTD Net Profit
+YTD Net Profit Unit
+LTM Net Profit
+LTM Net Profit Unit
+LTM Net Profit YoY % Change
+LTM Net Profit YoY % Change Unit
+LTM Net Profit 3 Year CAGR
+LTM Net Profit 3 Year CAGR Unit
+QTD Gross Profit
+QTD Gross Profit Unit
+YTD Gross Profit
+YTD Gross Profit Unit
+LTM Gross Profit
+LTM Gross Profit Unit
+LTM Gross Profit YoY % Change
+LTM Gross Profit YoY % Change Unit
+LTM Gross Profit 3 Year CAGR
+LTM Gross Profit 3 Year CAGR Unit
+QTD Operating Profit
+QTD Operating Profit Unit
+YTD Operating Profit
+YTD Operating Profit Unit
+LTM Operating Profit
+LTM Operating Profit Unit
+LTM Operating Profit YoY % Change
+LTM Operating Profit YoY % Change Unit
+LTM Operating Profit 3 Year CAGR
+LTM Operating Profit 3 Year CAGR Unit
+QTD Revenue
+QTD Revenue Unit
+YTD Revenue
+YTD Revenue Unit
+LTM Revenue
+LTM Revenue Unit
+LTM Revenue YoY % Change
+LTM Revenue YoY % Change Unit
+LTM Revenue 3 Year CAGR
+LTM Revenue 3 Year CAGR Unit
+QTD CapEx
+QTD CapEx Unit
+YTD CapEx
+YTD CapEx Unit
+LTM CapEx
+LTM CapEx Unit
+LTM CapEx YoY % Change
+LTM CapEx YoY % Change Unit
+LTM CapEx 3 Year CAGR
+LTM CapEx 3 Year CAGR Unit
+QTD Operating Expenses
+QTD Operating Expenses Unit
+YTD Operating Expenses
+YTD Operating Expenses Unit
+LTM Operating Expenses
+LTM Operating Expenses Unit
+LTM Operating Expenses YoY % Change
+LTM Operating Expenses YoY % Change Unit
+LTM Operating Expenses 3 Year CAGR
+LTM Operating Expenses 3 Year CAGR Unit
+Net Debt
+Net Debt Unit
+Net Debt Multiple
+Net Debt Multiple Unit
+Pro Forma Net Debt Multiple
+Pro Forma Net Debt Multiple Unit
+Adjusted Net Debt Multiple
+Adjusted Net Debt Multiple Unit
+ARR
+ARR Unit
+ARR YoY % Change
+ARR YoY % Change Unit
+ARR 3 Year CAGR
+ARR 3 Year CAGR Unit
+Monthly Recurring Revenue (MRR)
+Monthly Recurring Revenue (MRR) Unit
+QTD Cash Burn
+QTD Cash Burn Unit
+YTD Cash Burn
+YTD Cash Burn Unit
+LTM Cash Burn
+LTM Cash Burn Unit
+Debt
+Debt Unit
+Cash
+Cash Unit
+Shareholders Equity
+Shareholders Equity Unit
+Total Liabilities
+Total Liabilities Unit
+Current Liabilities
+Current Liabilities Unit
+Non Current Liabilities
+Non Current Liabilities Unit
+Total Assets
+Total Assets Unit
+Current Assets
+Current Assets Unit
+Non Current Assets
+Non Current Assets Unit
+Return On Equity
+Return On Equity Unit
+Return On Assets
+Return On Assets Unit
+Debt to Equity
+Debt to Equity Unit
+Equity
+Equity Unit
+Enterprise Value
+Enterprise Value Unit
+Enterprise Value YoY % Change
+Enterprise Value YoY % Change Unit
+Enterprise Value 3 Year CAGR
+Enterprise Value 3 Year CAGR Unit
+Pre-Money Valuation
+Pre-Money Valuation Unit
+Post-Money Valuation
+Post-Money Valuation Unit
+Cash Price
+Cash Price Unit
+Gross Asset Value
+Gross Asset Value Unit
+LTM Net Cash Flow From Operations
+LTM Net Cash Flow From Operations Unit
+QTD Net Cash Flow From Operations
+QTD Net Cash Flow From Operations Unit
+YTD Net Cash Flow From Operations
+YTD Net Cash Flow From Operations Unit
+Debt Multiple
+Debt Multiple Unit
+Pro Forma Debt Multiple
+Pro Forma Debt Multiple Unit
+Adjusted Debt Multiple
+Adjusted Debt Multiple Unit
+QTD EBIT Margin
+QTD EBIT Margin Unit
+YTD EBIT Margin
+YTD EBIT Margin Unit
+LTM EBIT Margin
+LTM EBIT Margin Unit
+Pro Forma QTD EBIT Margin
+Pro Forma QTD EBIT Margin Unit
+Pro Forma YTD EBIT Margin
+Pro Forma YTD EBIT Margin Unit
+Pro Forma LTM EBIT Margin
+Pro Forma LTM EBIT Margin Unit
+Adjusted QTD EBIT Margin
+Adjusted QTD EBIT Margin Unit
+Adjusted YTD EBIT Margin
+Adjusted YTD EBIT Margin Unit
+Adjusted LTM EBIT Margin
+Adjusted LTM EBIT Margin Unit
+Pro Forma QTD EBITA Margin
+Pro Forma QTD EBITA Margin Unit
+Pro Forma YTD EBITA Margin
+Pro Forma YTD EBITA Margin Unit
+Pro Forma LTM EBITA Margin
+Pro Forma LTM EBITA Margin Unit
+Adjusted QTD EBITA Margin
+Adjusted QTD EBITA Margin Unit
+Adjusted YTD EBITA Margin
+Adjusted YTD EBITA Margin Unit
+Adjusted LTM EBITA Margin
+Adjusted LTM EBITA Margin Unit
+QTD EBITA Margin
+QTD EBITA Margin Unit
+YTD EBITA Margin
+YTD EBITA Margin Unit
+LTM EBITA Margin
+LTM EBITA Margin Unit
+QTD EBITDA Margin
+QTD EBITDA Margin Unit
+YTD EBITDA Margin
+YTD EBITDA Margin Unit
+LTM EBITDA Margin
+LTM EBITDA Margin Unit
+Pro Forma QTD EBITDA Margin
+Pro Forma QTD EBITDA Margin Unit
+Pro Forma YTD EBITDA Margin
+Pro Forma YTD EBITDA Margin Unit
+Pro Forma LTM EBITDA Margin
+Pro Forma LTM EBITDA Margin Unit
+Adjusted QTD EBITDA Margin
+Adjusted QTD EBITDA Margin Unit
+Adjusted YTD EBITDA Margin
+Adjusted YTD EBITDA Margin Unit
+Adjusted LTM EBITDA Margin
+Adjusted LTM EBITDA Margin Unit
+QTD Net Margin
+QTD Net Margin Unit
+YTD Net Margin
+YTD Net Margin Unit
+LTM Net Margin
+LTM Net Margin Unit
+QTD Operating Margin
+QTD Operating Margin Unit
+YTD Operating Margin
+YTD Operating Margin Unit
+LTM Operating Margin
+LTM Operating Margin Unit
+QTD Gross Margin
+QTD Gross Margin Unit
+YTD Gross Margin
+YTD Gross Margin Unit
+LTM Gross Margin
+LTM Gross Margin Unit
+Revenue Multiple
+Revenue Multiple Unit
+Total Assets to Equity
+Total Assets to Equity Unit
+Loan to Assets
+Loan to Assets Unit
+Funding Status
+Funding Status Unit
+Vintage
+Vintage Unit
+LTM Revenue per Headcount
+LTM Revenue per Headcount Unit
+LTM Operating Expenses per Headcount
+LTM Operating Expenses per Headcount Unit
+Burn Rate
+Burn Rate Unit
+Headcount
+Headcount Unit
+Headcount YoY % Change?
+Headcount YoY % Change? Unit
+Number of Users/Customers
+Number of Users/Customers Unit
+Loan Type
+Loan Type Unit
+Seniority
+Seniority Unit
+Green Bonds
+Green Bonds Unit
+Start Yield
+Start Yield Unit
+Current Yield
+Current Yield Unit
+Base%
+Base% Unit
+Base Other
+Base Other Unit
+Floor
+Floor Unit
+Spread
+Spread Unit
+Coupon Yield
+Coupon Yield Unit
+Term
+Term Unit
+Start LTV
+Start LTV Unit
+Current LTV
+Current LTV Unit
+Frequency
+Frequency Unit
+Maturity Date
+Maturity Date Unit
+Modified Duration
+Modified Duration Unit
+Contribution to Yield
+Contribution to Yield Unit
+Accrued
+Accrued Unit
+Number Of Covenants
+Number Of Covenants Unit
+Interest Coverage
+Interest Coverage Unit
+Credit Support Annex
+Credit Support Annex Unit
+Original Issue Discount %
+Original Issue Discount % Unit
+Interest Rate
+Interest Rate Unit
+PIK Interest Margin %
+PIK Interest Margin % Unit
+Cash Interest Margin %
+Cash Interest Margin % Unit
+Covenant Status
+Covenant Status Unit
+Covenants
+Covenants Unit
+Coupon Type
+Coupon Type Unit
+Secured
+Secured Unit
+Principal Repayment
+Principal Repayment Unit
+Instrument Issue Date
+Instrument Issue Date Unit
+Settlement Date
+Settlement Date Unit
+Instrument Coupon Rate
+Instrument Coupon Rate Unit
+Duration
+Duration Unit
+Number of Assets
+Number of Assets Unit
+Asset Size
+Asset Size Unit
+Capitalisation Rate
+Capitalisation Rate Unit
+Weighted Average Lease Term
+Weighted Average Lease Term Unit
+Vacancy Rate
+Vacancy Rate Unit
+Current Occupancy Rate
+Current Occupancy Rate Unit
+Rent
+Rent Unit
+Purchase Price
+Purchase Price Unit
+Price per Square Foot
+Price per Square Foot Unit
+Number of Tenants
+Number of Tenants Unit
+Tenants
+Tenants Unit
+Projected QTD Net Operating Income
+Projected QTD Net Operating Income Unit
+Projected YTD Net Operating Income
+Projected YTD Net Operating Income Unit
+Projected LTM Net Operating Income
+Projected LTM Net Operating Income Unit
+Projected QTD Net Income
+Projected QTD Net Income Unit
+Projected YTD Net Income
+Projected YTD Net Income Unit
+Projected LTM Net Income
+Projected LTM Net Income Unit
+Projected Adjusted QTD EBITDA
+Projected Adjusted QTD EBITDA Unit
+Projected Adjusted YTD EBITDA
+Projected Adjusted YTD EBITDA Unit
+Projected Adjusted LTM EBITDA
+Projected Adjusted LTM EBITDA Unit
+Projected Adjusted LTM EBITDA YoY % Change
+Projected Adjusted LTM EBITDA YoY % Change Unit
+Projected Adjusted LTM EBITDA 3 Year CAGR
+Projected Adjusted LTM EBITDA 3 Year CAGR Unit
+Projected QTD EBIT
+Projected QTD EBIT Unit
+Projected YTD EBIT
+Projected YTD EBIT Unit
+Projected LTM EBIT
+Projected LTM EBIT Unit
+Projected LTM EBIT YoY % Change
+Projected LTM EBIT YoY % Change Unit
+Projected LTM EBIT 3 Year CAGR
+Projected LTM EBIT 3 Year CAGR Unit
+Projected Adjusted QTD EBITA
+Projected Adjusted QTD EBITA Unit
+Projected Adjusted YTD EBITA
+Projected Adjusted YTD EBITA Unit
+Projected Adjusted LTM EBITA
+Projected Adjusted LTM EBITA Unit
+Projected Adjusted LTM EBITA YoY % Change
+Projected Adjusted LTM EBITA YoY % Change Unit
+Projected Adjusted LTM EBITA 3 Year CAGR
+Projected Adjusted LTM EBITA 3 Year CAGR Unit
+Projected QTD EBITDA
+Projected QTD EBITDA Unit
+Projected YTD EBITDA
+Projected YTD EBITDA Unit
+Projected LTM EBITDA
+Projected LTM EBITDA Unit
+Projected QTD Gross Profit
+Projected QTD Gross Profit Unit
+Projected YTD Gross Profit
+Projected YTD Gross Profit Unit
+Projected LTM Gross Profit
+Projected LTM Gross Profit Unit
+Projected QTD Operating Profit
+Projected QTD Operating Profit Unit
+Projected YTD Operating Profit
+Projected YTD Operating Profit Unit
+Projected LTM Operating Profit
+Projected LTM Operating Profit Unit
+Projected QTD Revenue
+Projected QTD Revenue Unit
+Projected YTD Revenue
+Projected YTD Revenue Unit
+Projected LTM Revenue
+Projected LTM Revenue Unit
+Projected QTD CapEx
+Projected QTD CapEx Unit
+Projected YTD CapEx
+Projected YTD CapEx Unit
+Projected LTM CapEx
+Projected LTM CapEx Unit
+Projected QTD Cash Burn
+Projected QTD Cash Burn Unit
+Projected YTD Cash Burn
+Projected YTD Cash Burn Unit
+Projected LTM Cash Burn
+Projected LTM Cash Burn Unit
+Projected Adjusted QTD EBITDA Margin
+Projected Adjusted QTD EBITDA Margin Unit
+Projected Adjusted YTD EBITDA Margin
+Projected Adjusted YTD EBITDA Margin Unit
+Projected Adjusted LTM EBITDA Margin
+Projected Adjusted LTM EBITDA Margin Unit
+Projected QTD EBIT Margin
+Projected QTD EBIT Margin Unit
+Projected YTD EBIT Margin
+Projected YTD EBIT Margin Unit
+Projected LTM EBIT Margin
+Projected LTM EBIT Margin Unit
+Projected QTD EBITA
+Projected QTD EBITA Unit
+Projected YTD EBITA
+Projected YTD EBITA Unit
+Projected LTM EBITA
+Projected LTM EBITA Unit
+Projected LTM EBITA YoY % Change
+Projected LTM EBITA YoY % Change Unit
+Projected LTM EBITA 3 Year CAGR
+Projected LTM EBITA 3 Year CAGR Unit
+Projected QTD EBITA Margin
+Projected QTD EBITA Margin Unit
+Projected YTD EBITA Margin
+Projected YTD EBITA Margin Unit
+Projected LTM EBITA Margin
+Projected LTM EBITA Margin Unit
+Projected Adjusted QTD EBITA Margin
+Projected Adjusted QTD EBITA Margin Unit
+Projected Adjusted YTD EBITA Margin
+Projected Adjusted YTD EBITA Margin Unit
+Projected Adjusted LTM EBITA Margin
+Projected Adjusted LTM EBITA Margin Unit
+Projected QTD Net Profit
+Projected QTD Net Profit Unit
+Projected YTD Net Profit
+Projected YTD Net Profit Unit
+Projected LTM Net Profit
+Projected LTM Net Profit Unit
+Entry Metrics Quarter
+Entry Metrics Quarter Unit
+Entry LTM Revenue
+Entry LTM Revenue Unit
+Entry Adjusted LTM EBITDA
+Entry Adjusted LTM EBITDA Unit
+Entry LTM EBITDA
+Entry LTM EBITDA Unit
+Entry Pro Forma LTM EBITDA
+Entry Pro Forma LTM EBITDA Unit
+Entry Equity
+Entry Equity Unit
+Entry Debt
+Entry Debt Unit
+Entry Net Debt
+Entry Net Debt Unit
+Entry Cash
+Entry Cash Unit
+Entry Enterprise Value
+Entry Enterprise Value Unit
+Entry ARR
+Entry ARR Unit
+Entry Revenue Multiple
+Entry Revenue Multiple Unit
+Entry EBITDA Multiple
+Entry EBITDA Multiple Unit
+Entry Pro Forma EBITDA Multiple
+Entry Pro Forma EBITDA Multiple Unit
+Entry Adjusted EBITDA Multiple
+Entry Adjusted EBITDA Multiple Unit
+Entry Net Debt Multiple
+Entry Net Debt Multiple Unit
+Entry Debt Multiple
+Entry Debt Multiple Unit
+Latest/Exit Metrics Quarter
+Latest/Exit Metrics Quarter Unit
+Latest/Exit LTM Revenue
+Latest/Exit LTM Revenue Unit
+Latest/Exit Adjusted LTM EBITDA
+Latest/Exit Adjusted LTM EBITDA Unit
+Latest/Exit LTM EBITDA
+Latest/Exit LTM EBITDA Unit
+Latest/Exit Pro Forma LTM EBITDA
+Latest/Exit Pro Forma LTM EBITDA Unit
+Latest/Exit Equity
+Latest/Exit Equity Unit
+Latest/Exit Debt
+Latest/Exit Debt Unit
+Latest/Exit Net Debt
+Latest/Exit Net Debt Unit
+Latest/Exit Cash
+Latest/Exit Cash Unit
+Latest/Exit Enterprise Value
+Latest/Exit Enterprise Value Unit
+Latest/Exit ARR
+Latest/Exit ARR Unit
+Latest/Exit Revenue Multiple
+Latest/Exit Revenue Multiple Unit
+Latest/Exit EBITDA Multiple
+Latest/Exit EBITDA Multiple Unit
+Latest/Exit Pro Forma EBITDA Multiple
+Latest/Exit Pro Forma EBITDA Multiple Unit
+Latest/Exit Adjusted EBITDA Multiple
+Latest/Exit Adjusted EBITDA Multiple Unit
+Latest/Exit Net Debt Multiple
+Latest/Exit Net Debt Multiple Unit
+Latest/Exit Debt Multiple
+Latest/Exit Debt Multiple Unit

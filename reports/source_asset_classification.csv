@@ -1,0 +1,6 @@
+source_asset_class,rows,distinct_names,share_of_rows
+balance_sheet,5518,28,0.09487620357634113
+accounting_entry,577,14,0.009920907840440165
+subtotal,17,3,0.0002922971114167813
+unnamed_aggregate,278,28,0.004779917469050894
+holding,51770,8633,0.890130674002751
