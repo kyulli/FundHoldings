@@ -32,10 +32,16 @@ ENTITY_GRAINS = (
     "lot",
     "security",
     "company",
+    "statement_line",
     "sector_rollup",
     "country_rollup",
     "other_bucket",
     "fund",
+)
+
+ADAPTER_KINDS = (
+    "native",
+    "ocr",
 )
 
 EXTRACTION_MODES = (
@@ -44,6 +50,7 @@ EXTRACTION_MODES = (
     "fund_aggregate_only",
     "blocked_narrative",
     "manual_review",
+    "scanned_financial_statements",
 )
 
 DEAL_STATUS_FIELDS = (
@@ -70,9 +77,33 @@ EXCEL_SHEETS = (
     "raw_cells",
     "investment_lots",
     "company_summary",
+    "statement_entities",
     "realized_lots",
     "reconciliation",
     "validation_issues",
+)
+
+# Canonical extraction bundle keys shared by native and OCR adapters.
+CANONICAL_PAYLOAD_KEYS = (
+    "run_manifest",
+    "metadata",
+    "parser_decisions",
+    "raw_cells",
+    "investment_lots",
+    "company_summary",
+    "statement_entities",
+    "realized_lots",
+    "reconciliation",
+    "validation_issues",
+    "classified_rows",
+    "camelot_raw",
+    "pdfplumber_raw",
+    "company_events",
+    "realized_totals",
+    "route",
+    "fund_aggregate",
+    "extraction_quality",
+    "selected_parser",
 )
 
 

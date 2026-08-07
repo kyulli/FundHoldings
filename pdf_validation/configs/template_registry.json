@@ -99,6 +99,22 @@
       "comparison_grain": "mixed_condensed",
       "default_fund_hints": ["perry creek"]
     },
+    "castanea_balance_sheet": {
+      "base_config": "configs/castanea_fund_iii_balance_sheet.json",
+      "header_fingerprint_any": [
+        "cash and cash equivalents",
+        "accrued professional fees",
+        "partners' capital",
+        "balance sheet"
+      ],
+      "min_fingerprint_hits": 2,
+      "schedule_titles": [],
+      "realized_titles": [],
+      "comparison_grain": "statement_and_portfolio",
+      "default_fund_hints": ["castanea"],
+      "requires_ocr": true,
+      "notes": "Config-driven scanned FS pathway (scanned-ocr CLI). Line labels/aliases live in template JSON; fund vendor aliases in mapping JSON + vendor_mapping_registry.json."
+    },
     "generic_holdings_schedule": {
       "base_config": "configs/families/generic_holdings_schedule.json",
       "header_fingerprint_any": [],
