@@ -1,0 +1,85 @@
+{
+  "mapping_id": "castanea_A103ce5_full_vendor",
+  "mapping_version": "2.1.0",
+  "pdf_template_id": "castanea_fund_iii_full_statements",
+  "extraction_mode": "scanned_financial_statements",
+  "vendor_amount_fields": [
+    "Current Cost",
+    "Unrealized Value",
+    "Capital Invested",
+    "Realized Proceeds",
+    "Realized Cost",
+    "Total Value",
+    "Unrealized Gain/Loss"
+  ],
+  "comparability": {
+    "fund_identity": {
+      "pdf_fund_name_field": "fund_name",
+      "vendor_fund_id_field": "Fund Allocator ID",
+      "vendor_fund_id": "A103ce5",
+      "require_explicit_fund_id": true,
+      "allow_fuzzy_name_match_to_confirm": false,
+      "identity_confirmation_note": "User-provided Fund Allocator ID A103ce5 for Castanea Partners Fund III."
+    },
+    "as_of_date": {
+      "pdf_field": "as_of_date",
+      "vendor_field": "As At Date",
+      "pdf_normalized_expected": null,
+      "vendor_raw_expected": null,
+      "vendor_date_formats": ["%d-%b-%y", "%d-%b-%Y", "%Y-%m-%d"],
+      "require_exact_match": true
+    },
+    "currency": {
+      "pdf_field": "currency",
+      "vendor_field": "Reporting Currency",
+      "waiver": {
+        "enabled": true,
+        "assumed_value": "USD",
+        "reason": "Scanned Castanea FS shows $ only; vendor Reporting Currency blank."
+      }
+    },
+    "unit": {
+      "pdf_field": "unit",
+      "vendor_field": "Reporting Currency Unit",
+      "waiver": {
+        "enabled": true,
+        "assumed_value": "ones",
+        "reason": "No thousands/millions label; amounts align at ones."
+      }
+    },
+    "grain": {
+      "pdf_comparison_grain": "statement_and_portfolio",
+      "vendor_comparison_grain": "source_asset_row",
+      "vendor_entity_field": "Source Asset",
+      "allow_automatic_entity_confirmation": false,
+      "fuzzy_candidate_generation": true
+    }
+  },
+  "entity_mappings": [
+    {
+      "pdf_line_id": "cash",
+      "pdf_label": "Cash and cash equivalents",
+      "vendor_source_asset": "Non-Investment Assets - Cash",
+      "entity_grain": "statement_line",
+      "confirmed": true,
+      "confirmation": "explicit_template_alias"
+    },
+    {
+      "pdf_line_id": "accrued_professional_fees",
+      "pdf_label": "Accrued professional fees",
+      "vendor_source_asset": "Non-Investment Liabilities - Other Liabilities",
+      "entity_grain": "statement_line",
+      "confirmed": true,
+      "confirmation": "explicit_template_alias",
+      "notes": "Sign flipped to negative for vendor Unrealized Value."
+    },
+    {
+      "pdf_company_name": "Thorley Industries LLC",
+      "vendor_source_asset": "Thorley Industries LLC (4Moms)",
+      "entity_grain": "company",
+      "confirmed": true,
+      "confirmation": "explicit_template_alias",
+      "notes": "Portfolio Investments company vs vendor Source Asset."
+    }
+  ]
+}

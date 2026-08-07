@@ -100,7 +100,6 @@ def _detect_as_of(text: str) -> str | None:
             continue
         if match.lastindex and match.lastindex >= 3:
             return _iso(match.group(1), match.group(2), match.group(3))
-        # hardcoded march 31 2026 fallback pattern without groups handled below
 
     matches = list(
         re.finditer(
@@ -120,13 +119,104 @@ def _detect_as_of(text: str) -> str | None:
     return None
 
 
+def _annotate_adapter_fields(
+    route: dict[str, Any],
+    *,
+    text_source: str,
+    pdf_path: Path,
+    registry: dict[str, Any],
+) -> dict[str, Any]:
+    """Additive adapter routing fields; does not change existing extraction_mode semantics."""
+    route = dict(route)
+    route["text_source"] = text_source
+    family = route.get("template_family")
+    family_cfg = (registry.get("template_families") or {}).get(family or "") or {}
+    if family_cfg.get("requires_ocr") or route.get("extraction_mode") == "scanned_financial_statements":
+        route["recommended_adapter"] = "ocr"
+        route["requires_ocr"] = True
+        route["adapter_config_ref"] = family_cfg.get("base_config") or route.get("base_config")
+    else:
+        route["recommended_adapter"] = "native"
+        route["requires_ocr"] = False
+        route["adapter_config_ref"] = family_cfg.get("base_config") or route.get("base_config")
+    route.setdefault("pdf_path", str(pdf_path))
+    return route
+
+
+def _route_ocr_family(
+    *,
+    pdf_path: Path,
+    filename: str,
+    text_source: str,
+    registry: dict[str, Any],
+    reasons: list[str],
+    as_of: str | None,
+) -> dict[str, Any] | None:
+    """Route scanned/mixed PDFs to requires_ocr families via filename hints."""
+    if text_source not in {"scanned", "mixed"}:
+        return None
+    for family_id, family in (registry.get("template_families") or {}).items():
+        if not family.get("requires_ocr"):
+            continue
+        hints = [h.lower() for h in (family.get("default_fund_hints") or []) if h]
+        if hints and not any(h in filename for h in hints):
+            continue
+        reasons.append(f"ocr_family={family_id}")
+        reasons.append(f"text_source={text_source}")
+        return _annotate_adapter_fields(
+            {
+                "document_class": "financial_statements_with_schedule",
+                "template_family": family_id,
+                "extraction_mode": "scanned_financial_statements",
+                "schedules_detected": ["balance_sheet", "portfolio_investments"],
+                "schedule_pages": [],
+                "realized_pages": [],
+                "as_of_date": as_of,
+                "comparison_grain": family.get("comparison_grain") or "statement_and_portfolio",
+                "base_config": family.get("base_config"),
+                "reasons": reasons,
+                "confidence": 0.85,
+                "aggregate_fallback_available": False,
+                "compare_allowed": True,
+            },
+            text_source=text_source,
+            pdf_path=pdf_path,
+            registry=registry,
+        )
+    return None
+
+
 def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> dict[str, Any]:
     """Classify PDF and pick a template family when position-level extraction is possible."""
     registry = registry or load_registry()
-    pages = _page_texts(Path(pdf_path))
+    pdf_path = Path(pdf_path)
+    pages = _page_texts(pdf_path)
     text = _full_text(pages)
-    filename = Path(pdf_path).name.lower()
+    filename = pdf_path.name.lower()
     reasons: list[str] = []
+
+    try:
+        from pdf_validation.page_content import detect_pdf_text_source
+
+        scan = detect_pdf_text_source(pdf_path)
+        text_source = scan.get("source") or "native"
+    except Exception:  # noqa: BLE001
+        text_source = "native" if any(t.strip() for _, t in pages) else "scanned"
+        scan = {"source": text_source}
+
+    as_of = _detect_as_of(text)
+    ocr_route = _route_ocr_family(
+        pdf_path=pdf_path,
+        filename=filename,
+        text_source=text_source,
+        registry=registry,
+        reasons=list(reasons),
+        as_of=as_of,
+    )
+    # Prefer OCR family for scanned/mixed PDFs that match OCR template hints,
+    # even when native auditor-letter pages contain aggregate phrases.
+    if ocr_route is not None:
+        return ocr_route
 
     schedule_titles = registry["document_classes"]["financial_statements_with_schedule"]["schedule_title_patterns"]
     schedule_pages = _find_schedule_pages(pages, schedule_titles)
@@ -136,21 +226,25 @@ def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> di
     letter_cfg = registry["document_classes"]["investor_letter"]
     letter_hit = any(sig in text or sig in filename for sig in letter_cfg["signals_any"])
     if letter_hit and (letter_cfg.get("require_no_schedule") is False or not has_schedule):
-        # Prefer blocking when letter signals dominate and no schedule table exists.
         if not has_schedule or "investor letter" in filename:
             reasons.append("investor_letter_signal")
-            return {
-                "document_class": "investor_letter",
-                "template_family": None,
-                "extraction_mode": "blocked_narrative",
-                "schedules_detected": [],
-                "schedule_pages": [],
-                "realized_pages": [],
-                "as_of_date": _detect_as_of(text),
-                "reasons": reasons,
-                "confidence": 0.95,
-                "aggregate_fallback_available": False,
-            }
+            return _annotate_adapter_fields(
+                {
+                    "document_class": "investor_letter",
+                    "template_family": None,
+                    "extraction_mode": "blocked_narrative",
+                    "schedules_detected": [],
+                    "schedule_pages": [],
+                    "realized_pages": [],
+                    "as_of_date": as_of,
+                    "reasons": reasons,
+                    "confidence": 0.95,
+                    "aggregate_fallback_available": False,
+                },
+                text_source=text_source,
+                pdf_path=pdf_path,
+                registry=registry,
+            )
 
     if has_schedule:
         reasons.append(f"schedule_pages={schedule_pages}")
@@ -158,11 +252,12 @@ def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> di
         for family_id, family in registry["template_families"].items():
             if family.get("fallback_only"):
                 continue
+            if family.get("requires_ocr"):
+                continue
             hits = _fingerprint_hits(text, family["header_fingerprint_any"])
             score = len(hits)
             if family.get("require_audit_signal") and not (_has_audit_signal(text) or "audited" in filename or "afs" in filename):
                 continue
-            # Prefer condensed when title present.
             if family_id == "condensed_hedge_schedule" and "condensed schedule" in text:
                 score += 3
             if family_id == "simple_lot_schedule" and "schedule of investment" in text and "schedule of investments" not in text:
@@ -180,20 +275,25 @@ def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> di
             realized_pages = _find_schedule_pages(pages, [t.lower() for t in family.get("realized_titles", [])])
             reasons.append(f"family={family_id}")
             reasons.append(f"fingerprint_hits={hits}")
-            return {
-                "document_class": "financial_statements_with_schedule",
-                "template_family": family_id,
-                "extraction_mode": "position_level",
-                "schedules_detected": ["investments"] + (["realized"] if realized_pages else []),
-                "schedule_pages": schedule_pages,
-                "realized_pages": realized_pages,
-                "as_of_date": _detect_as_of(text),
-                "comparison_grain": family.get("comparison_grain", "company"),
-                "base_config": family.get("base_config"),
-                "reasons": reasons,
-                "confidence": min(0.99, 0.55 + 0.1 * score),
-                "aggregate_fallback_available": True,
-            }
+            return _annotate_adapter_fields(
+                {
+                    "document_class": "financial_statements_with_schedule",
+                    "template_family": family_id,
+                    "extraction_mode": "position_level",
+                    "schedules_detected": ["investments"] + (["realized"] if realized_pages else []),
+                    "schedule_pages": schedule_pages,
+                    "realized_pages": realized_pages,
+                    "as_of_date": as_of,
+                    "comparison_grain": family.get("comparison_grain", "company"),
+                    "base_config": family.get("base_config"),
+                    "reasons": reasons,
+                    "confidence": min(0.99, 0.55 + 0.1 * score),
+                    "aggregate_fallback_available": True,
+                },
+                text_source=text_source,
+                pdf_path=pdf_path,
+                registry=registry,
+            )
         reasons.append("schedule_found_but_family_unmapped")
         from pdf_validation.schema_inference import infer_schema
 
@@ -207,70 +307,93 @@ def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> di
         )
         if can_infer:
             reasons.append("generic_schema_inference")
-            return {
+            return _annotate_adapter_fields(
+                {
+                    "document_class": "financial_statements_with_schedule",
+                    "template_family": "generic_holdings_schedule",
+                    "extraction_mode": "position_level_inferred",
+                    "schedules_detected": ["investments"],
+                    "schedule_pages": schedule_pages,
+                    "realized_pages": [],
+                    "as_of_date": as_of,
+                    "comparison_grain": inferred.get("comparison_grain") or "company",
+                    "base_config": "configs/families/generic_holdings_schedule.json",
+                    "inferred_schema": inferred,
+                    "reasons": reasons,
+                    "confidence": float(inferred.get("inference_confidence") or 0.55),
+                    "aggregate_fallback_available": True,
+                    "onboarding_status": "inferred_ready",
+                    "compare_allowed": False,
+                },
+                text_source=text_source,
+                pdf_path=pdf_path,
+                registry=registry,
+            )
+        return _annotate_adapter_fields(
+            {
                 "document_class": "financial_statements_with_schedule",
-                "template_family": "generic_holdings_schedule",
-                "extraction_mode": "position_level_inferred",
+                "template_family": None,
+                "extraction_mode": "manual_review",
                 "schedules_detected": ["investments"],
                 "schedule_pages": schedule_pages,
                 "realized_pages": [],
-                "as_of_date": _detect_as_of(text),
-                "comparison_grain": inferred.get("comparison_grain") or "company",
-                "base_config": "configs/families/generic_holdings_schedule.json",
+                "as_of_date": as_of,
                 "inferred_schema": inferred,
                 "reasons": reasons,
-                "confidence": float(inferred.get("inference_confidence") or 0.55),
+                "confidence": float(inferred.get("inference_confidence") or 0.4),
                 "aggregate_fallback_available": True,
-                "onboarding_status": "inferred_ready",
+                "onboarding_status": "needs_review",
                 "compare_allowed": False,
-            }
-        return {
-            "document_class": "financial_statements_with_schedule",
-            "template_family": None,
-            "extraction_mode": "manual_review",
-            "schedules_detected": ["investments"],
-            "schedule_pages": schedule_pages,
-            "realized_pages": [],
-            "as_of_date": _detect_as_of(text),
-            "inferred_schema": inferred,
-            "reasons": reasons,
-            "confidence": float(inferred.get("inference_confidence") or 0.4),
-            "aggregate_fallback_available": True,
-            "onboarding_status": "needs_review",
-            "compare_allowed": False,
-        }
+            },
+            text_source=text_source,
+            pdf_path=pdf_path,
+            registry=registry,
+        )
 
     # Aggregate-only financials (Perry quarterlies).
     agg_cfg = registry["document_classes"]["financial_statements_aggregate_only"]
     if any(sig in text for sig in agg_cfg["signals_any"]):
         reasons.append("aggregate_statement_without_schedule")
-        return {
-            "document_class": "financial_statements_aggregate_only",
+        return _annotate_adapter_fields(
+            {
+                "document_class": "financial_statements_aggregate_only",
+                "template_family": None,
+                "extraction_mode": "fund_aggregate_only",
+                "schedules_detected": [],
+                "schedule_pages": [],
+                "realized_pages": [],
+                "as_of_date": as_of,
+                "comparison_grain": "fund",
+                "reasons": reasons,
+                "confidence": 0.9,
+                "aggregate_fallback_available": True,
+            },
+            text_source=text_source,
+            pdf_path=pdf_path,
+            registry=registry,
+        )
+
+    reasons.append("no_schedule_or_aggregate_signal")
+    if text_source in {"scanned", "mixed"}:
+        reasons.append("scanned_without_ocr_family_hint")
+    return _annotate_adapter_fields(
+        {
+            "document_class": "unknown",
             "template_family": None,
-            "extraction_mode": "fund_aggregate_only",
+            "extraction_mode": "manual_review",
             "schedules_detected": [],
             "schedule_pages": [],
             "realized_pages": [],
-            "as_of_date": _detect_as_of(text),
-            "comparison_grain": "fund",
+            "as_of_date": as_of,
             "reasons": reasons,
-            "confidence": 0.9,
-            "aggregate_fallback_available": True,
-        }
-
-    reasons.append("no_schedule_or_aggregate_signal")
-    return {
-        "document_class": "unknown",
-        "template_family": None,
-        "extraction_mode": "manual_review",
-        "schedules_detected": [],
-        "schedule_pages": [],
-        "realized_pages": [],
-        "as_of_date": _detect_as_of(text),
-        "reasons": reasons,
-        "confidence": 0.2,
-        "aggregate_fallback_available": False,
-    }
+            "confidence": 0.2,
+            "aggregate_fallback_available": False,
+            "scan_detection": scan,
+        },
+        text_source=text_source,
+        pdf_path=pdf_path,
+        registry=registry,
+    )
 
 
 def classify_sample_tree(sample_root: Path, registry: dict[str, Any] | None = None) -> list[dict[str, Any]]:
