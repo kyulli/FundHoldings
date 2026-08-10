@@ -98,6 +98,66 @@ def _prefer_reported_or_lot_sum(
     return reported, f"pdf_investments_{field}_reported_lot_sum_incomplete"
 
 
+def build_statement_line_metrics(statement_entities: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    statement_line grain: map template vendor_field_map / metrics into vendor amount fields.
+
+    Cash / Liability / other BS lines stay out of company_summary.
+    """
+    rows: list[dict[str, Any]] = []
+    for entity in statement_entities or []:
+        metrics = dict(entity.get("metrics") or {})
+        if not metrics and entity.get("amount_normalized") is not None:
+            for vendor_field in (entity.get("vendor_field_map") or {}):
+                metrics[vendor_field] = entity.get("amount_normalized")
+        rows.append(
+            {
+                "entity_grain": "statement_line",
+                "pdf_line_id": entity.get("line_id"),
+                "pdf_label": entity.get("label_normalized") or entity.get("label_raw"),
+                "vendor_source_asset": entity.get("vendor_source_asset"),
+                "metrics": metrics,
+                "amount_normalized": entity.get("amount_normalized"),
+                "source_page": entity.get("source_page"),
+                "ocr_confidence": entity.get("ocr_confidence"),
+                "derived": bool(entity.get("derived")),
+                "sign_rule": entity.get("sign_rule"),
+            }
+        )
+    return rows
+
+
+def build_portfolio_company_vendor_metrics(company_summary: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """company grain for OCR/native portfolio rows without lot-derived realized metrics."""
+    rows: list[dict[str, Any]] = []
+    for company in company_summary or []:
+        cost = company.get("cost_reported_normalized")
+        fv = company.get("fair_value_reported_normalized")
+        ugl = company.get("unrealized_gain_loss_reported_normalized")
+        if ugl is None and cost is not None and fv is not None:
+            c = _to_decimal(cost)
+            f = _to_decimal(fv)
+            if c is not None and f is not None:
+                ugl = format_decimal(f - c)
+        rows.append(
+            {
+                "entity_grain": "company",
+                "pdf_company_name": company.get("company_name"),
+                "vendor_source_asset": company.get("company_name"),
+                "metrics": {
+                    "Current Cost": cost,
+                    "Unrealized Value": fv,
+                    "Unrealized Gain/Loss": ugl,
+                },
+                "source_page": company.get("source_page") or company.get("subtotal_page"),
+                "ocr_confidence": company.get("ocr_confidence"),
+                "deal_status_inferred": company.get("deal_status_inferred"),
+                "inference_rule": company.get("inference_rule") or "not_applicable",
+            }
+        )
+    return rows
+
+
 def build_pdf_comparable_metrics(
     *,
     company_summary: list[dict[str, Any]],

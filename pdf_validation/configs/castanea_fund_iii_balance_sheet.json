@@ -1,0 +1,249 @@
+{
+  "template_id": "castanea_fund_iii_full_statements",
+  "template_version": "2.0.0",
+  "template_family": "castanea_balance_sheet",
+  "parser_version": "0.2.0",
+  "requires_ocr": true,
+  "output_schema_version": "1.0.0",
+  "comparison_grain": "statement_and_portfolio",
+  "document": {
+    "fund_name_expected": "Castanea Partners Fund III, L.P.",
+    "fund_name_hints": ["Castanea Partners Fund III", "Castanea Partners Fund"],
+    "report_type_expected": "Financial Statements",
+    "as_of_date_expected": null,
+    "currency_expected": "USD",
+    "unit_expected": "ones",
+    "audit_status_expected": null
+  },
+  "pages": {
+    "cover": 1,
+    "balance_sheet": 2,
+    "statement_of_assets": 2,
+    "schedule_of_investments": [],
+    "schedule_of_realized": null
+  },
+  "min_ocr_confidence": 70,
+  "required_balance_line_ids": [
+    "cash",
+    "accrued_professional_fees",
+    "total_assets",
+    "total_liabilities_and_capital"
+  ],
+  "schedule_titles": {
+    "balance_sheet": [
+      "balance sheet",
+      "statement of assets, liabilities and partners' capital",
+      "statement of assets, liabilities and partners’ capital",
+      "statement of assets liabilities and partners capital"
+    ],
+    "operations": ["statement of operations"],
+    "portfolio_investments": [
+      "statement of portfolio investments",
+      "schedule of portfolio investments"
+    ],
+    "cash_flows": ["statement of cash flows", "statement of cash flow"],
+    "partners_capital": ["statement of changes in partners"]
+  },
+  "ocr": {
+    "provider": "tesseract",
+    "dpi": 300,
+    "prefer": "auto",
+    "max_pages": 20,
+    "fallback_providers": ["docling"]
+  },
+  "balance_sheet_lines": [
+    {
+      "line_id": "portfolio_investments_fv",
+      "section": "assets",
+      "label": "Portfolio investments, at fair value",
+      "label_aliases": [
+        "Portfolio investments, at fair value",
+        "Portfolio investments at fair value"
+      ],
+      "reject_if_contains": ["Total", "Statement of"],
+      "vendor_field_map": {},
+      "notes": "Optional BS asset line; cost often embedded as (cost $X), FV may be dash/zero."
+    },
+    {
+      "line_id": "cash",
+      "section": "assets",
+      "label": "Cash and cash equivalents",
+      "label_aliases": ["Cash and cash equivalents", "Cash and cash equivalent"],
+      "reject_if_contains": ["Total", "beginning", "change", "Net", "period end", "December", "March", "June", "September"],
+      "vendor_source_asset": "Non-Investment Assets - Cash",
+      "vendor_field_map": {
+        "Unrealized Value": "amount_normalized"
+      },
+      "notes": "Cash asset maps to vendor Unrealized Value."
+    },
+    {
+      "line_id": "total_assets",
+      "section": "assets",
+      "label": "Total Assets",
+      "label_aliases": ["Total Assets"],
+      "reject_if_contains": ["Liabilities"],
+      "vendor_field_map": {}
+    },
+    {
+      "line_id": "accrued_professional_fees",
+      "section": "liabilities",
+      "label": "Accrued professional fees",
+      "label_aliases": ["Accrued professional fees"],
+      "reject_if_contains": ["Total", "Increase"],
+      "force_negative": true,
+      "vendor_source_asset": "Non-Investment Liabilities - Other Liabilities",
+      "vendor_field_map": {
+        "Unrealized Value": "amount_normalized"
+      },
+      "notes": "PDF positive liability -> vendor negative Unrealized Value."
+    },
+    {
+      "line_id": "general_partner",
+      "section": "partners_capital",
+      "label": "General partner",
+      "label_aliases": ["General partner"],
+      "reject_if_contains": ["Total"],
+      "vendor_field_map": {}
+    },
+    {
+      "line_id": "limited_partners",
+      "section": "partners_capital",
+      "label": "Limited partners",
+      "label_aliases": ["Limited partners"],
+      "reject_if_contains": ["Total"],
+      "vendor_field_map": {}
+    },
+    {
+      "line_id": "total_partners_capital",
+      "section": "partners_capital",
+      "label": "Total partners' capital",
+      "label_aliases": [
+        "Total partners' capital",
+        "Total partners’ capital",
+        "Total partners capital"
+      ],
+      "reject_if_contains": ["Liabilities"],
+      "vendor_field_map": {}
+    },
+    {
+      "line_id": "total_liabilities_and_capital",
+      "section": "totals",
+      "label": "Total Liabilities and Partners' Capital",
+      "label_aliases": [
+        "Total Liabilities and Partners' Capital",
+        "Total Liabilities and Partners’ Capital",
+        "Total Liabilities and Partners Capital"
+      ],
+      "vendor_field_map": {}
+    }
+  ],
+  "operations_lines": [
+    {
+      "line_id": "net_realized_loss",
+      "label": "Net realized loss on sale of portfolio investments",
+      "label_aliases": [
+        "Net realized loss on sale of portfolio investments",
+        "Net realized loss on sale of portfolio investment"
+      ],
+      "vendor_field_map": {}
+    },
+    {
+      "line_id": "net_change_unrealized",
+      "label": "Net change in unrealized appreciation of portfolio investments",
+      "label_aliases": [
+        "Net change in unrealized appreciation of portfolio investments",
+        "Net change in unrealized appreciation of portfolio Investments"
+      ],
+      "vendor_field_map": {}
+    },
+    {
+      "line_id": "net_increase_from_operations",
+      "label": "Net increase in partners capital from operations",
+      "label_aliases": [
+        "Net increase in partners capital from operations",
+        "Net increase in partners' capital from operations",
+        "Net increase in partners’ capital from operations"
+      ],
+      "vendor_field_map": {}
+    }
+  ],
+  "cash_flow_lines": [
+    {
+      "line_id": "beginning_cash",
+      "label": "Cash and cash equivalents at beginning of the year",
+      "label_aliases": [
+        "Cash and cash equivalents at beginning of the year",
+        "Cash and cash equivalents at beginning of period",
+        "Cash and cash equivalents at beginning"
+      ],
+      "vendor_field_map": {}
+    },
+    {
+      "line_id": "ending_cash",
+      "label": "Cash and cash equivalents at period end",
+      "label_aliases": [
+        "Cash and cash equivalents at December 31",
+        "Cash and cash equivalents at March 31",
+        "Cash and cash equivalents at June 30",
+        "Cash and cash equivalents at September 30"
+      ],
+      "reject_if_contains": ["beginning", "change", "Net"],
+      "vendor_field_map": {}
+    }
+  ],
+  "portfolio_company_vendor_field_map": {
+    "Current Cost": "cost_normalized",
+    "Unrealized Value": "fair_value_normalized",
+    "Unrealized Gain/Loss": "unrealized_gain_loss_normalized"
+  },
+  "vendor_amount_fields": [
+    "Current Cost",
+    "Unrealized Value",
+    "Capital Invested",
+    "Realized Proceeds",
+    "Realized Cost",
+    "Total Value",
+    "Unrealized Gain/Loss"
+  ],
+  "metadata_patterns": {
+    "fund_name": "Castanea Partners Fund III",
+    "report_type": "Financial statements",
+    "as_of_date": "(December|March|June|September)\\s+\\d{1,2},\\s*\\d{4}",
+    "audit_status": "Independent Auditor",
+    "currency_hint_tokens": ["$"],
+    "unit_hint": "ones"
+  },
+  "camelot": {
+    "flavor": "stream",
+    "strip_text": "\n",
+    "split_text": true,
+    "parallel": false,
+    "investments": {"pages": "", "table_areas": [], "columns": [], "expected_columns": 0, "column_names": []},
+    "realized": {"pages": "", "table_areas": [], "columns": [], "expected_columns": 0, "column_names": []}
+  },
+  "pdfplumber": {
+    "investments": {"pages": [], "crop_bbox": [0, 0, 1, 1], "table_settings": {}},
+    "realized": {"pages": [], "crop_bbox": [0, 0, 1, 1], "table_settings": {}}
+  },
+  "headers": {"investments_required": [], "realized_required": [], "header_token_patterns": [], "ignore_row_patterns": []},
+  "row_classification": {
+    "date_pattern": "^\\d{1,2}/\\d{1,2}/\\d{4}$",
+    "grand_total_company_tokens": ["", "total"],
+    "currency_tokens": ["$"],
+    "dash_tokens": ["-", "—", "–"],
+    "blank_tokens": ["", "nan", "none"]
+  },
+  "field_semantics": {
+    "cost": {"dash_means": "zero"},
+    "fair_value": {"dash_means": "zero"},
+    "unrealized_gain_loss": {"dash_means": "zero"}
+  },
+  "reconciliation": {
+    "tolerance_absolute": "0",
+    "golden_required": false,
+    "statement_of_assets": {},
+    "golden_schedule_investments": {},
+    "golden_schedule_realized": {}
+  },
+  "prefer_text_fallback": false
+}

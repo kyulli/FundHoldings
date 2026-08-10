@@ -11,6 +11,7 @@ import pandas as pd
 
 from pdf_validation.document_router import classify_sample_tree, load_registry, route_document
 from pdf_validation.entity_mapping import build_entity_mappings
+from pdf_validation.mapping_registry import load_mapping_for_fund
 from pdf_validation.pipeline import run_extract
 from pdf_validation.vendor_comparison import _parse_vendor_date, compare_with_vendor
 
@@ -33,11 +34,26 @@ VENDOR_DATE_MAP = {
 
 
 def _base_mapping_for_fund(fund_id: str) -> dict[str, Any]:
-    base_path = PKG / "configs" / "syn_ventures_fund_ii_q3_2025_vendor_mapping.json"
-    mapping = json.loads(base_path.read_text(encoding="utf-8"))
-    mapping["comparability"]["fund_identity"]["vendor_fund_id"] = fund_id
-    mapping["entity_mappings"] = []
+    mapping, _, _ = load_mapping_for_fund(
+        fund_id,
+        pkg_root=PKG,
+        allow_default_native_template=True,
+    )
+    if mapping is None:
+        raise FileNotFoundError(f"No vendor mapping template available for fund_id={fund_id}")
     return mapping
+
+
+def _approved_mapping_for_fund(fund_id: str) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """Return (mapping, registry_entry) only when fund has an explicit approved mapping."""
+    mapping, path, entry = load_mapping_for_fund(
+        fund_id,
+        pkg_root=PKG,
+        allow_default_native_template=False,
+    )
+    if mapping is None or path is None:
+        return None, entry
+    return mapping, entry
 
 
 def _run_one(pdf: Path, fund_id: str) -> dict[str, Any]:
@@ -78,6 +94,46 @@ def _run_one(pdf: Path, fund_id: str) -> dict[str, Any]:
         if mode == "position_level_inferred":
             result["inferred_schema"] = (payload.get("route") or {}).get("inferred_schema")
             result["status"] = "discover_only"
+        return result
+
+    # OCR / statement path: only compare when an approved fund mapping exists in registry.
+    if mode == "scanned_financial_statements" or route.get("recommended_adapter") == "ocr":
+        mapping, entry = _approved_mapping_for_fund(fund_id)
+        if mapping is not None:
+            mapping = dict(mapping)
+            mapping["extraction_mode"] = entry.get("extraction_mode") or mapping.get("extraction_mode") or "scanned_financial_statements"
+            if as_of and as_of != "unknown":
+                mapping["comparability"]["as_of_date"]["pdf_normalized_expected"] = as_of
+                mapping["comparability"]["as_of_date"]["vendor_raw_expected"] = VENDOR_DATE_MAP.get(as_of)
+            map_path = CONFIG_DIR / f"{stem}_vendor_mapping.json"
+            CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+            map_path.write_text(json.dumps(mapping, indent=2), encoding="utf-8")
+            report = compare_with_vendor(
+                extraction_dir=out_dir / "extract",
+                vendor_csv=CSV_PATH,
+                mapping_config=map_path,
+                output_dir=out_dir / "compare",
+                repo_root=ROOT,
+            )
+            amounts = report.get("amount_comparisons") or []
+            result.update(
+                {
+                    "comparability_status": report.get("comparability_status"),
+                    "overall_status": report.get("overall_status"),
+                    "match": sum(1 for a in amounts if a.get("status") == "match"),
+                    "mismatch": sum(1 for a in amounts if a.get("status") == "mismatch"),
+                    "entities_mapped": len(mapping.get("entity_mappings") or []),
+                    "statement_entities": len(payload.get("statement_entities") or []),
+                    "adapter_kind": "ocr",
+                    "mapping_registry_entry": entry or None,
+                }
+            )
+            return result
+        result["comparability_status"] = "needs_review"
+        result["match"] = 0
+        result["mismatch"] = 0
+        result["blocked_reason"] = "ocr_without_approved_mapping"
+        result["compare_allowed"] = False
         return result
 
     mapping = _base_mapping_for_fund(fund_id)

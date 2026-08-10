@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "notes": "Fund-specific vendor mappings live here, not in Python. Batch/compare look up by Fund Allocator ID.",
+  "by_fund_id": {
+    "A103ce5": {
+      "mapping_config": "configs/castanea_A103ce5_balance_sheet_vendor_mapping.json",
+      "template_family": "castanea_balance_sheet",
+      "extraction_mode": "scanned_financial_statements"
+    },
+    "A0d2a71": {
+      "mapping_config": "configs/syn_ventures_fund_ii_q3_2025_vendor_mapping.json",
+      "template_family": "vc_lot_schedule",
+      "extraction_mode": "position_level"
+    }
+  },
+  "default_native_mapping_template": "configs/syn_ventures_fund_ii_q3_2025_vendor_mapping.json"
+}
