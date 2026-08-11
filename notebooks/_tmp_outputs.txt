@@ -1,0 +1,894 @@
+============================================================================
+[3] id=code-imports-params
+============================================================================
+data dir         : /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/data
+reports dir      : /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/reports
+Mandatory fields : ['Capital Invested', 'Current Cost', 'Unrealized Value', 'Realized Proceeds', 'Deal Status', 'Sector', 'Geographic Focus']
+Fill threshold   : 85%
+Min rows/group   : 10
+
+
+============================================================================
+[6] id=code-asat
+============================================================================
+Distinct As At Date values:
+['30-Jun-25', '30-Sep-25', '31-Dec-24', '31-Dec-25', '31-Mar-25', '31-Mar-26']
+
+Reporting currencies: ['SEK' 'NOK' 'DKK' 'EUR' 'USD' 'GBP' 'AUD' 'CAD' '$' 'C$' 'US$']
+
+
+============================================================================
+[9] id=code-missing
+============================================================================
+                                                missing_cnt  missing_pnt
+Projected QTD EBIT Unit                               58160   100.000000
+Maturity Date Unit                                    58160   100.000000
+Projected Adjusted LTM EBITA YoY % Change Unit        58160   100.000000
+Frequency Unit                                        58160   100.000000
+Projected Adjusted LTM EBITA 3 Year CAGR              58160   100.000000
+...                                                     ...          ...
+Sector                                                  129     0.221802
+Sector Level 1                                          129     0.221802
+Geographic Focus                                         31     0.053301
+Geography Level 1                                        31     0.053301
+Type of Investment                                        1     0.001719
+
+[830 rows x 2 columns]
+
+============================================================================
+[11] id=md-missing-note
+============================================================================
+
+
+============================================================================
+[19] id=None
+============================================================================
+--- Identifier format check ---
+
+Investment Manager Allocator ID
+  distinct values      : 101
+  malformed rows       : 440  (0.757%)
+  malformed distinct   : 1
+  examples             : ['3.95E+42']
+  funds affected       : 7
+
+Fund Allocator ID
+  distinct values      : 385
+  malformed rows       : 0  (0.000%)
+
+Source Asset ID
+  distinct values      : 11,388
+  malformed rows       : 25,442  (43.745%)
+  malformed distinct   : 4346
+  examples             : ['27211', '61360', '61362', '61363', '61364']
+  funds affected       : 107
+
+--- Blast radius on manager rollups ---
+Funds under a malformed manager ID       : 7
+Of those, also seen under a valid ID     : 0
+  -> the malformed ID is a self-contained bucket; the manager count is correct but that manager cannot be identified without the source data.
+
+Funds mapping to >1 manager ID: 0
+
+
+============================================================================
+[21] id=942ff445
+============================================================================
+     Investment Manager Allocator ID Fund Allocator ID  \
+2498                        3.95E+42           Af017ce   
+2499                        3.95E+42           Af017ce   
+2500                        3.95E+42           Af017ce   
+2501                        3.95E+42           Af017ce   
+2502                        3.95E+42           Af017ce   
+
+                                         Source Asset Source Asset ID  \
+2498                          Asset Backed Securities         A44dccf   
+2499  Commercial Real Estate Debt & Equity Securities         A4be84f   
+2500  Consumer Loan and Small Business Loan Portfolio         A3a69c1   
+2501                      Corporate Debt & Securities         A623a44   
+2502                      Corporate Loan Originations         A7939da   
+
+     As At Date       Deal Status    Asset Status Reporting Currency  \
+2498 2026-03-31  Partially Exited  Existing Asset                NaN   
+2499 2026-03-31  Partially Exited  Existing Asset                NaN   
+2500 2026-03-31  Partially Exited  Existing Asset                NaN   
+2501 2026-03-31  Partially Exited  Existing Asset                NaN   
+2502 2026-03-31  Partially Exited  Existing Asset                NaN   
+
+                                        Allocator Asset  \
+2498  Fortress Credit Opportunities - Asset Backed S...   
+2499  Fortress Credit Opportunities - Commercial Rea...   
+2500  Fortress Credit Opportunities - Consumer Loan ...   
+2501  Fortress Credit Opportunities - Corporate Debt...   
+2502  Fortress Credit Opportunities - Corporate Loan...   
+
+     Allocator Asset Allocator ID  ...  \
+2498                      A3f3737  ...   
+2499                      Adbd753  ...   
+2500                      Ae87f4c  ...   
+2501                      Af96d0c  ...   
+2502                      Ac2b31d  ...   
+
+     Latest/Exit Adjusted EBITDA Multiple Unit Latest/Exit Net Debt Multiple  \
+2498                                       NaN                           NaN   
+2499                                       NaN                           NaN   
+2500                                       NaN                           NaN   
+2501                                       NaN                           NaN   
+2502                                       NaN                           NaN   
+
+     Latest/Exit Net Debt Multiple Unit Latest/Exit Debt Multiple  \
+2498                                NaN                       NaN   
+2499                                NaN                       NaN   
+2500                                NaN                       NaN   
+2501                                NaN                       NaN   
+2502                                NaN                       NaN   
+
+     Latest/Exit Debt Multiple Unit  source_asset_class is_scorable  \
+2498                            NaN             holding        True   
+2499                            NaN   unnamed_aggregate        True   
+2500                            NaN             holding        True   
+2501                            NaN             holding        True   
+2502                            NaN             holding        True   
+
+     is_resolvable needs_name_review  is_real_investment  
+2498          True             False                True  
+2499         False             False                True  
+2500          True             False                True  
+2501          True             False                True  
+2502          True             False                True  
+
+[5 rows x 593 columns]
+
+============================================================================
+[24] id=code-filter
+============================================================================
+--- Source Asset classification ---
+                     rows  distinct_names  share_of_rows
+source_asset_class                                      
+balance_sheet        5518              28           9.49
+accounting_entry      577              14           0.99
+subtotal               17               3           0.03
+unnamed_aggregate     278              28           0.48
+holding             51770            8633          89.01
+
+Scorable rows     : 52,048
+Resolvable rows   : 51,770
+Excluded rows     : 6,112
+
+Newly excluded vs prefix-only filter: 594 rows
+source_asset_class  Source Asset                                                
+accounting_entry    Quarterly Unrealized Gain/Loss                                  334
+                    ASC 740-10 Accrual                                              145
+                    Cumulative unrealized loss from foreign currency translation     18
+                    Idle Cash                                                        17
+subtotal            Subtotal Private Investments                                     13
+accounting_entry    Pending Escrow                                                   12
+                    Tax Distributions                                                10
+                    AO Football Transfer Receivable                                   9
+                    Annual Current Cost Gain/Loss                                     7
+                    Realized Proceeds Applied to Loan Repayment                       6
+                    Foreign Currency Translation                                      6
+                    Cash                                                              4
+
+Names held back for human review: 4
+Source Asset
+Hero Investments              6
+Thales Investment             6
+Edge Investments              5
+Greylock Scout Investments    2
+
+
+============================================================================
+[27] id=code-byfield
+============================================================================
+
+--- Completeness SUMMARY (real investment rows only) ---
+Value columns scored     : 329
+Completely empty columns : 0
+Completely full columns  : 7
+Partially filled columns : 322
+
+Bottom 15 (worst gaps):
+Projected LTM EBIT YoY % Change              0.001921%
+Non Current Liabilities                      0.001921%
+YTD EBIT Margin                              0.001921%
+Projected Adjusted QTD EBITDA Margin         0.001921%
+Projected LTM EBITA 3 Year CAGR              0.001921%
+Non Current Assets                           0.001921%
+Proceeds from Disposal                       0.001921%
+Projected Adjusted LTM EBITDA 3 Year CAGR    0.001921%
+Current Liabilities                          0.001921%
+IPO Date                                     0.001921%
+Projected YTD Gross Profit                   0.001921%
+LTM Net Cash Flow From Operations            0.001921%
+YTD EBIT                                     0.001921%
+QTD EBIT                                     0.001921%
+Current Assets                               0.001921%
+
+
+============================================================================
+[29] id=code-dealstatus-completeness
+============================================================================
+--- Deal Status Completeness ---
+  Current                                            28,381  (54.5%)
+  Fully Exited                                       10,895  (20.9%)
+  Partially Exited                                    5,753  (11.1%)
+  Written Down                                        3,096  (5.9%)
+  Written Off                                         2,478  (4.8%)
+  MISSING                                               935  (1.8%)
+  Partially Exited, Remainder Written Down              510  (1.0%)
+
+Missing rate, all rows          : 11.4%
+Missing rate, real investments  : 1.8%
+Difference explained by filter  : 9.6% of rows
+
+
+============================================================================
+[32] id=code-byfund
+============================================================================
+Panel rows (all quarters) : 52,048
+Cross-section rows @ 2026-03-31 : 8,848
+Funds in latest quarter   : 318 (of 385 ever seen)
+Scored on: ['Capital Invested', 'Current Cost', 'Unrealized Value', 'Realized Proceeds', 'Deal Status', 'Sector', 'Geographic Focus']
+Funds scored: 385
+
+Top 10 (most complete):
+  Fund A7bc2d3:  100.0% avg fill rate
+  Fund A7ed594:  100.0% avg fill rate
+  Fund A6f42ff:  100.0% avg fill rate
+  Fund A722c06:  100.0% avg fill rate
+  Fund A72c0d9:  100.0% avg fill rate
+  Fund A758776:  100.0% avg fill rate
+  Fund A75eb76:  100.0% avg fill rate
+  Fund A780765:  100.0% avg fill rate
+  Fund A79043d:  100.0% avg fill rate
+  Fund A7b4ffd:  100.0% avg fill rate
+
+Bottom 10 (least complete):
+  Acc6f90:  57.1%
+  Ace7356:  57.1%
+  A103ce5:  57.1%
+  Aff00c9:  57.1%
+  A4350ff:  55.4%
+  Aa56f0f:  55.1%
+  Adf56a5:  51.4%
+  A80d406:  47.6%
+  Ae7bb35:  42.3%
+  Ab3ea87:  36.5%
+
+
+============================================================================
+[36] id=code-bymanager
+============================================================================
+Managers total          : 101
+  with >= 10 rows      : 89
+  low evidence (< 10)  : 12
+
+Completeness distribution (managers with >= 10 rows):
+count    89.000000
+mean      0.897420
+std       0.129086
+min       0.398986
+25%       0.822157
+50%       0.951147
+75%       0.994994
+max       1.000000
+
+Top 10 managers (most complete):
+                                 n_rows  n_funds  n_companies  completeness
+Investment Manager Allocator ID                                            
+A2e3873                              64        1           12           1.0
+A96d213                              18        1            3           1.0
+A372a3f                             684        2          101           1.0
+A61c681                             372        3           51           1.0
+A6a2191                              54        1            9           1.0
+A4f8dbc                              48        1            8           1.0
+A4d29bc                             115        1           20           1.0
+A9b5f84                             446        2           75           1.0
+A44e6c2                              66        2           11           1.0
+A2f186b                             124        3           23           1.0
+
+Bottom 10 managers (least complete):
+                                 n_rows  n_funds  n_companies  completeness
+Investment Manager Allocator ID                                            
+A12c595                             290        4           50      0.709852
+A109e0f                             148        5           27      0.700772
+Af0082f                            1223        5          227      0.688821
+A49a079                              95        1           17      0.688722
+Adad2f2                              55        1           11      0.683117
+A02306d                              76        4           15      0.680451
+A9fbabf                             169        3           45      0.621302
+Aed3782                             226        1           74      0.571429
+A99a662                              54        3           27      0.563492
+A5d1a01                             169        2           36      0.398986
+
+
+============================================================================
+[39] id=code-bymanager-field
+============================================================================
+Field-level fill rate for the 10 least complete managers:
+                                 Capital Invested  Current Cost  Unrealized Value  Realized Proceeds  Deal Status  Sector  Geographic Focus
+Investment Manager Allocator ID                                                                                                            
+A12c595                                       0.0          99.0              99.0                0.0         99.0   100.0             100.0
+A109e0f                                       4.1          94.6              94.6                4.1         93.2   100.0             100.0
+Af0082f                                       0.0          98.4              98.4                0.0         85.3   100.0             100.0
+A49a079                                       0.0          94.7              94.7                0.0         92.6   100.0             100.0
+Adad2f2                                       0.0           0.0              80.0              100.0         98.2   100.0             100.0
+A02306d                                       7.9          89.5              89.5                7.9         81.6   100.0             100.0
+A9fbabf                                       0.0          78.7              78.7                0.0         77.5   100.0             100.0
+Aed3782                                       0.0           0.0             100.0                0.0        100.0   100.0             100.0
+A99a662                                       0.0           0.0             100.0                0.0         98.1    96.3             100.0
+A5d1a01                                       8.3          21.9              21.9                8.3         18.9   100.0             100.0
+
+Worst-reported field per manager (bottom 10):
+  A12c595:  Capital Invested at 0.0%
+  A109e0f:  Capital Invested at 4.1%
+  Af0082f:  Capital Invested at 0.0%
+  A49a079:  Capital Invested at 0.0%
+  Adad2f2:  Capital Invested at 0.0%
+  A02306d:  Capital Invested at 7.9%
+  A9fbabf:  Capital Invested at 0.0%
+  Aed3782:  Capital Invested at 0.0%
+  A99a662:  Capital Invested at 0.0%
+  A5d1a01:  Capital Invested at 8.3%
+
+
+============================================================================
+[42] id=code-manager-vs-fund
+============================================================================
+Managers whose funds disagree most (fund-level issue, not manager-level):
+                                 n_funds   best  worst  spread
+Investment Manager Allocator ID                               
+A02306d                                4  1.000  0.571   0.429
+A65900b                                5  1.000  0.637   0.363
+A899074                                5  1.000  0.643   0.357
+A109e0f                                5  1.000  0.644   0.356
+3.95E+42                               7  0.954  0.661   0.293
+A670146                                4  1.000  0.712   0.288
+Aded344                               14  1.000  0.714   0.286
+A8e74aa                                2  1.000  0.714   0.286
+A6c1ccf                                8  1.000  0.714   0.286
+Aa8e77d                               10  1.000  0.720   0.280
+
+Managers most consistent across funds (manager-level policy):
+                                 n_funds   best  worst  spread
+Investment Manager Allocator ID                               
+Aac22ed                                2  1.000  0.999   0.001
+A4a62c2                                4  0.714  0.713   0.001
+Ab02df9                                3  1.000  0.999   0.001
+A61c681                                3  1.000  1.000   0.000
+A54f085                                2  0.714  0.714   0.000
+A44e6c2                                2  1.000  1.000   0.000
+Ad915f3                                2  0.714  0.714   0.000
+A372a3f                                2  1.000  1.000   0.000
+A2f186b                                3  1.000  1.000   0.000
+A9b5f84                                2  1.000  1.000   0.000
+
+
+============================================================================
+[45] id=None
+============================================================================
+--- Rule overlap (definitions are not mutually exclusive) ---
+                rows
+rules matched       
+0                927
+1              45063
+2               6058
+
+Rows matching >1 rule: 6,058 (11.6%) -> resolved by precedence: Written Off > Written Down > Partially Exited, Remainder Written Down > Partially Exited > Current > Fully Exited
+
+--- Coverage of the supplied rules ---
+Rows classified     : 51,121  (98.2%)
+Rows unclassifiable : 927  (1.8%)
+  all inputs blank         : 569
+  negative Unrealized Value: 33   <- no rule covers UV < 0; likely a genuine gap in the rule set
+  other                    : 325
+
+--- Are the 935 blank Deal Status rows computable? ---
+Derivable without GP outreach : 8 (0.0% of all rows)
+Not derivable (inputs missing): 927   <- the real gap
+
+What the derivable blanks would become:
+Fully Exited    8
+
+Blank status WITH complete UV and RP: 30
+  These cannot be a GP reporting gap: the inputs the rule needs are present, so the status should have been assigned. This is a vendor mapping failure.
+
+--- CONFORMANCE: reported vs derived (51,113 comparable rows) ---
+Agreement rate: 99.9%
+
+derived                                   Current  Fully Exited  Partially Exited  Partially Exited, Remainder Written Down  Written Down  Written Off
+reported                                                                                                                                              
+Current                                     28381             0                 0                                         0             0            0
+Fully Exited                                    0         10895                 0                                         0             0            0
+Partially Exited                                0             0              5753                                         0             0            0
+Partially Exited, Remainder Written Down        0             0                 0                                       510             0            0
+Written Down                                    0             0                 0                                         0          3096            0
+Written Off                                     0            26                 0                                         0             0         2452
+
+Wrote deal_status_conformance_exceptions.csv (26 rows)
+
+Disagreements concentrate in:
+Deal Status  Deal Status (derived)
+Written Off  Fully Exited             26
+
+--- Profiling the undocumented category (510 rows) ---
+Hypothesis: UV = 0 and RP > 0 and CC > 0
+  UV = 0 (within EPS) : 100.0%
+  RP > 0              : 100.0%
+  CC > 0              : 100.0%
+  all three hold      : 100.0%
+
+If the joint rate is high the hypothesis stands and the rule can be documented. If it is low, a rule is missing rather than undocumented.
+
+--- Blank Realized Proceeds on Fully Exited ---
+Gaps under the project glossary  (RP blank)            : 69
+Gaps under the supplied definition (RP and TV blank)   : 0
+Difference to resolve with the Investment Office       : 69 rows
+
+
+============================================================================
+[48] id=None
+============================================================================
+--- Denominator effect of the conditional rules ---
+Unconditional cells scored      : 364,336
+Conditional cells scored        : 310,744
+Cells removed as not applicable : 53,592
+Rows scored on a DERIVED status : 8
+
+Overall fill rate, unconditional : 95.6%
+Overall completeness, conditional: 96.8%
+Difference                       : +1.1%
+
+--- By field ---
+                   uncond_fill  applicable_%  cond_fill  expected_blanks  true_gaps
+Capital Invested          88.5         100.0       88.5                0       5993
+Current Cost              94.9          74.3       93.9            13381       2351
+Unrealized Value          98.8          79.1       98.6            10903        569
+Realized Proceeds         89.4          43.7      100.0            29308          0
+Deal Status               98.2         100.0       98.2                0        935
+Sector                    99.8         100.0       99.8                0        123
+Geographic Focus         100.0         100.0      100.0                0         25
+
+Funds below 85%, unconditional : 102
+Funds below 85%, conditional   : 83
+
+Funds most rehabilitated by conditional scoring:
+                   uncond_fill  cond_completeness  delta
+Fund Allocator ID                                       
+A31289e                  0.714              0.833  0.119
+Af5c876                  0.714              0.833  0.119
+Abc54d3                  0.714              0.833  0.119
+Afb294f                  0.714              0.833  0.119
+A32ca97                  0.714              0.833  0.119
+A6fcde0                  0.714              0.833  0.119
+A7bcb3d                  0.714              0.833  0.119
+A7804fe                  0.714              0.833  0.119
+A77a5f6                  0.714              0.833  0.119
+Af76863                  0.714              0.833  0.119
+
+Funds below threshold under BOTH scores (the defensible escalation list):
+                   uncond_fill  cond_completeness  delta
+Fund Allocator ID                                       
+Ab3ea87                  0.365              0.426  0.061
+Ae7bb35                  0.423              0.478  0.056
+A80d406                  0.476              0.556  0.079
+Adf56a5                  0.514              0.567  0.052
+Aa56f0f                  0.551              0.643  0.092
+A4350ff                  0.554              0.646  0.092
+Ae4c498                  0.600              0.655  0.055
+A2989df                  0.571              0.667  0.095
+A29c2b9                  0.571              0.667  0.095
+A7199bc                  0.571              0.667  0.095
+Acc6f90                  0.571              0.667  0.095
+Ace7356                  0.571              0.667  0.095
+A103ce5                  0.571              0.667  0.095
+Aff00c9                  0.571              0.667  0.095
+A4f6e3c                  0.571              0.667  0.095
+
+Conditional flag list: 7,540 rows
+Wrote flagged_missing_fields_conditional.csv
+
+
+============================================================================
+[51] id=code-entity
+============================================================================
+--- ENTITY RESOLUTION SCOPE ---
+Resolvable rows             = 51,770
+Distinct company names      = 8,633
+Reporting periods           = 6
+Avg rows per name           = 6.0   (a name held by one fund for all 6 periods already gives 6)
+
+--- Name / vendor-ID cardinality ---
+Names mapping to >1 Source Asset ID : 1,107  (12.8% of names)
+IDs mapping to >1 Source Asset name : 0  (0.0% of IDs)
+
+--- Cross-fund holdings (exact-name match, already resolved) ---
+Names held by >1 fund       = 1,107   <- Phase 3 comparison set
+
+Most widely held resolvable names:
+Source Asset
+Stripe             15
+Instacart           9
+Faire Wholesale     8
+DoorDash            8
+Ethereum            8
+ByteDance           8
+Meituan             7
+Bitcoin (BTC)       7
+Kalshi              6
+Snowflake           6
+
+--- RESOLUTION BACKLOG ---
+Distinct names                        : 8,633
+Groups colliding after normalisation  : 425   <- auto-merge candidates
+
+Examples:
+  ['X.AI', 'X.AI Holdings (FKA X)', 'X.AI Holdings (from X)', 'X.AI Holdings Corp', 'X.AI Holdings Corp.']
+  ['Temporal', 'Temporal Technologies', 'Temporal Technologies Inc', 'Temporal Technologies Inc.']
+  ['Chime Financial', 'Chime Financial Inc.', 'Chime Financial, Inc.', 'Chime Financial, Inc. (f/k/a 1debit, Inc.)']
+  ['Flock', 'Flock Group Inc (dba Flock Safety)', 'Flock Group Inc.', 'Flock Group Inc. (acq. Aerodome, Inc.)']
+  ['Block', 'Block (from Crew)', 'Block (from Weebly)', 'Block, Inc. (acquired Crew)']
+  ['Airbnb', 'Airbnb (Proprietary Fund BI)', 'Airbnb Inc', 'Airbnb, Inc.']
+  ['GoPuff', 'GoPuff (from rideOS)', 'Gopuff', 'Gopuff (GoBrands, Inc.)']
+  ['ByteDance', 'ByteDance (from Flipagram)', 'Bytedance Ltd.', 'Bytedance Ltd. (Toutiao)']
+
+rapidfuzz not installed; skipping fuzzy candidate generation.
+Install with: pip install rapidfuzz
+
+Aggregation buckets kept out of the queue: 15
+Source Asset
+Seed Investments                                   9
+Other Investments                                  7
+Commercial Real Estate Debt & Equity Securities    4
+Diversified Credit                                 4
+Residential                                        4
+Active Seed Deals                                  2
+Fund Investments                                   2
+Other                                              2
+
+
+============================================================================
+[59] id=code-export-scorecards
+============================================================================
+Wrote data_state_by_field.csv
+Wrote data_state_by_fund.csv
+Wrote data_state_by_manager.csv
+Wrote data_state_by_manager_field.csv
+
+
+============================================================================
+[61] id=code-validation
+============================================================================
+--- Data-state summary ---
+Rows (all)                    : 58,160
+Rows (real investments)       : 52,048
+Attributes (raw)              : 837
+Attributes (after drop-empty) : 593
+Attributes (value cols only)  : 329
+Funds                         : 385
+Managers                      : 101
+Unique company names          : 8,633
+Names held by >1 fund         : 1,107
+Resolution candidate pairs    : 0
+Flagged records (uncondit.)   : 7,803
+
+--- Validation checks ---
+Fund fill rate in [0, 1]         : True
+Manager fill rate in [0, 1]      : True
+Grain ['Fund Allocator ID', 'Source Asset ID', 'As At Date'] unique : True
+Unit columns stripped            : True
+Flagged rows are subset of real  : True
+Single reporting currency        : False
+
+All hard assertions passed.
+
+
+============================================================================
+[62] id=305ab0ec
+============================================================================
+--- Inferred reporting cadence by fund ---
+cadence
+quarterly        347
+annual            24
+single-period     12
+semi-annual        2
+
+Sponsor documentation confirms quarterly, semi-annual AND annual cycles, so a fund absent from a quarter is not automatically a gap.
+
+Fund-company series               : 10,150
+Series with TRUE interior gaps    : 144 (1.4%)
+Series flagged by naive global grid: 511 (5.0%)  <- overstated by non-quarterly reporters
+Funds affected (true gaps)        : 47
+
+Worst offenders (true gaps only):
+                                                        first       last  n_periods  expected  gap_periods    cadence
+Fund Allocator ID Source Asset                                                                                       
+A82f5de           Derivatives                      2024-12-31 2025-12-31          2         5            3  quarterly
+Ae5aac1           HS Investments SEAF 21m Limited  2024-12-31 2025-12-31          2         5            3  quarterly
+A44702b           Deductive AI                     2024-12-31 2025-12-31          2         5            3  quarterly
+A680edc           Solidroad                        2024-12-31 2026-03-31          3         6            3  quarterly
+A396ea8           HS Investments III Limited       2024-12-31 2025-12-31          2         5            3  quarterly
+Aa5bde6           Tava Health, Inc.                2024-12-31 2026-03-31          3         6            3  quarterly
+Ae5aac1           HS Investments SEA Fire Limited  2024-12-31 2025-12-31          2         5            3  quarterly
+                  HS Investments SEA Surry Limited 2024-12-31 2025-12-31          2         5            3  quarterly
+A8cbf09           Hunter Communications            2025-03-31 2026-03-31          2         5            3  quarterly
+Ab7dccf           Other Investments                2024-12-31 2025-12-31          2         5            3  quarterly
+
+Wrote reporting_gaps_by_series.csv and fund_reporting_cadence.csv
+
+
+============================================================================
+[65] id=code-field-dist
+============================================================================
+Funds scored: 385
+
+                   fill = 0%  0% < f <= 50%  50% < f < 100%  fill = 100%  median_fill  mean_fill  polarized_%
+Capital Invested          67             25              99          194        100.0       74.3         67.8
+Current Cost              17             13              83          272        100.0       91.0         75.1
+Unrealized Value           0              5              79          301        100.0       97.3         78.2
+Realized Proceeds         59             26              95          205        100.0       76.1         68.6
+Deal Status                3              5              99          278        100.0       96.1         73.0
+Sector                     0              1               7          377        100.0       99.7         97.9
+Geographic Focus           0              0               8          377        100.0       99.9         97.9
+
+
+============================================================================
+[68] id=code-fund-size
+============================================================================
+Distinct reporting currencies: 11  (['$', 'AUD', 'C$', 'CAD', 'DKK', 'EUR', 'GBP', 'NOK', 'SEK', 'US$', 'USD'])
+WARNING: Total Value is NOT additive across funds. NAV-based size is reported for reference only and must be FX-normalised before use.
+
+As-of date                : 2026-03-31
+Funds in cross-section    : 318
+Dropped (no/zero NAV)     : 65  -> mean quality of dropped funds = 68.1%, kept = 98.6%
+If those two means differ, the NAV test is selecting on the outcome and the correlation below is biased. Use the holding-count test instead.
+
+--- Size vs fill rate ---
+NAV (endogenous):  Pearson -0.05   Spearman -0.12
+Holding count   :  Pearson +0.06   Spearman -0.01
+Partial Spearman (NAV | holding count): -0.13
+
+Fill rate by NAV quartile:
+              size   mean  median
+nav_quartile                     
+0               64  0.976     1.0
+1               63  0.994     1.0
+2               63  0.997     1.0
+3               63  0.978     1.0
+
+
+============================================================================
+[72] id=code-investment-type
+============================================================================
+--- Fill rate by investment type ---
+  Cryptocurrency               97.6%  (535 rows)
+  Public Company               96.8%  (3,665 rows)
+  Private Company              96.1%  (41,985 rows)
+  Infrastructure Asset         94.9%  (48 rows)
+  Fund                         93.2%  (3,101 rows)
+  Financial Asset              92.1%  (218 rows)
+  Other                        91.5%  (1,498 rows)
+  Real Estate Asset            82.5%  (991 rows)
+  Natural Resources Asset      57.1%  (6 rows)
+
+Field-level fill rate by investment type:
+                         Capital Invested  Current Cost  Unrealized Value  Realized Proceeds  Deal Status  Sector  Geographic Focus
+Type of Investment                                                                                                                 
+Cryptocurrency                       90.7         100.0             100.0               92.7        100.0   100.0             100.0
+Public Company                       90.8          95.9              99.1               92.6         99.3   100.0             100.0
+Private Company                      89.1          96.8              99.1               89.7         98.4   100.0             100.0
+Infrastructure Asset                 95.8          68.8             100.0              100.0        100.0   100.0             100.0
+Fund                                 85.1          86.0              96.0               90.3         95.1   100.0             100.0
+Financial Asset                      92.2          60.6             100.0               92.7         99.5   100.0             100.0
+Other                                88.5          65.8              99.7               88.8         99.6    99.4              98.8
+Real Estate Asset                    65.0          85.9              92.3               54.9         90.7    88.9             100.0
+Natural Resources Asset               0.0           0.0             100.0                0.0        100.0   100.0             100.0
+
+Chart saved: quality_by_investment_type.png
+<Figure size 1000x500 with 1 Axes>
+
+============================================================================
+[75] id=adf296c4
+============================================================================
+has ticker              False  True 
+Type == Public Company              
+False                   53578    917
+True                        9   3656
+
+Ticker present but not typed as Public Company:
+Type of Investment
+Private Company    467
+Cryptocurrency     450
+
+
+============================================================================
+[78] id=code-sector-dist
+============================================================================
+--- TOP 15 SECTORS (latest cross-section, 2026-03-31) ---
+  Software                                 1,734  ( 19.7%)
+  Application Software                     1,267  ( 14.4%)
+  Asset Management & Custody Banks           520  (  5.9%)
+  Multi & Other                              438  (  5.0%)
+  Systems Software                           249  (  2.8%)
+  Interactive Media & Services               230  (  2.6%)
+  Financials                                 190  (  2.2%)
+  Health Care Services                       173  (  2.0%)
+  Real Estate                                146  (  1.7%)
+  Commercial Services & Supplies             143  (  1.6%)
+  Health Care Technology                     133  (  1.5%)
+  Cybersecurity                              125  (  1.4%)
+  Diversified Financial Services             111  (  1.3%)
+  Food Products                              111  (  1.3%)
+  Biotechnology                              106  (  1.2%)
+
+Top 5 sectors = 47.8% of holdings in the latest quarter
+
+--- TOP 20 PORTFOLIO COMPANIES (by number of funds holding, latest quarter) ---
+  Stripe                                   15 funds
+  Instacart                                 9 funds
+  ByteDance                                 8 funds
+  Faire Wholesale                           8 funds
+  Ethereum                                  8 funds
+  DoorDash                                  8 funds
+  Meituan                                   7 funds
+  Bitcoin (BTC)                             7 funds
+  Kalshi                                    6 funds
+  SpaceX                                    6 funds
+  Airwallex                                 5 funds
+  Airbnb                                    5 funds
+  Thumbtack                                 5 funds
+  Tempo Labs                                5 funds
+  Lalamove                                  5 funds
+  Zuoyebang                                 5 funds
+  SHEIN                                     5 funds
+  Graphcore                                 5 funds
+  Snowflake                                 5 funds
+  Klarna                                    5 funds
+
+Chart saved: portfolio_concentration.png
+<Figure size 1400x500 with 2 Axes>
+
+============================================================================
+[81] id=code-geography
+============================================================================
+--- TOP 15 GEOGRAPHIES BY HOLDING COUNT ---
+  United States                  27,181  (52.2%)
+  China                           6,727  (12.9%)
+  Multi & Other                   4,153  ( 8.0%)
+  India                           3,665  ( 7.0%)
+  United Kingdom                  1,434  ( 2.8%)
+  Singapore                       1,164  ( 2.2%)
+  Global                            832  ( 1.6%)
+  Canada                            640  ( 1.2%)
+  United States & Canada            608  ( 1.2%)
+  Israel                            597  ( 1.1%)
+  Germany                           485  ( 0.9%)
+  France                            458  ( 0.9%)
+  Indonesia                         427  ( 0.8%)
+  Hong Kong                         342  ( 0.7%)
+  Developed Europe                  330  ( 0.6%)
+
+--- LOWEST FILL RATE, geographies with >= 100 rows ---
+  Norway                         62.5%   (112 rows)
+  Sweden                         79.3%   (215 rows)
+  Developed Europe               86.0%   (330 rows)
+  United States & Canada         89.5%   (608 rows)
+  South Korea                    91.7%   (206 rows)
+  Russia                         93.9%   (146 rows)
+  China                          94.3%   (6,727 rows)
+  Global                         95.0%   (832 rows)
+  United States                  95.3%   (27,181 rows)
+  Netherlands                    96.1%   (146 rows)
+
+--- HIGHEST ---
+  Israel                         98.7%   (597 rows)
+  India                          99.1%   (3,665 rows)
+  Singapore                      99.1%   (1,164 rows)
+  Mexico                         99.1%   (134 rows)
+  Indonesia                      100.0%   (427 rows)
+
+52 geographies excluded as low evidence. Several of them score 100%, which reflects sample size, not reporting discipline.
+
+Spread of fill rate across ranked geographies : 37.5%
+Spread across ranked managers                 : 60.1%
+
+
+============================================================================
+[84] id=code-outliers
+============================================================================
+Median fund fill rate         : 98.7%
+10th percentile               : 71.4%
+Funds below 85% threshold     : 102 / 385 (26.5%)
+Funds at effectively 100%     : 165 / 385 (42.9%)
+
+--- BOTTOM DECILE (69 funds), worst 25 shown ---
+  Ab3ea87  36.5%
+  Ae7bb35  42.3%
+  A80d406  47.6%
+  Adf56a5  51.4%
+  Aa56f0f  55.1%
+  A4350ff  55.4%
+  Aff00c9  57.1%
+  A103ce5  57.1%
+  Ace7356  57.1%
+  Acc6f90  57.1%
+  A4f6e3c  57.1%
+  A7199bc  57.1%
+  A29c2b9  57.1%
+  A2989df  57.1%
+  Ae4c498  60.0%
+  A87a21d  60.5%
+  A162a33  62.4%
+  A3c99e8  63.3%
+  A1c6bfc  63.7%
+  Afed02f  64.3%
+  A930514  64.4%
+  Ae3893b  65.5%
+  Adfb13d  66.1%
+  A0841e0  67.1%
+  A9859d3  67.2%
+  ... 44 more, full list in data_state_by_fund.csv
+
+--- UNUSUALLY COMPLETE FUNDS (>2 std above mean) ---
+  None. The distribution is left-skewed with a ceiling at 100%, so no fund can sit 2 std ABOVE the mean. Only the low tail is informative here.
+
+--- UNUSUALLY SPARSE FUNDS (<2 std below mean) ---
+  Ab3ea87  36.5%  (z=-4.05)
+  Ae7bb35  42.3%  (z=-3.62)
+  A80d406  47.6%  (z=-3.22)
+  Adf56a5  51.4%  (z=-2.94)
+  Aa56f0f  55.1%  (z=-2.66)
+  A4350ff  55.4%  (z=-2.64)
+  Aff00c9  57.1%  (z=-2.51)
+  A103ce5  57.1%  (z=-2.51)
+  Ace7356  57.1%  (z=-2.51)
+  Acc6f90  57.1%  (z=-2.51)
+  A7199bc  57.1%  (z=-2.51)
+  A29c2b9  57.1%  (z=-2.51)
+  A2989df  57.1%  (z=-2.51)
+  A4f6e3c  57.1%  (z=-2.51)
+  Ae4c498  60.0%  (z=-2.30)
+  A87a21d  60.5%  (z=-2.26)
+  A162a33  62.4%  (z=-2.12)
+  A3c99e8  63.3%  (z=-2.05)
+  A1c6bfc  63.7%  (z=-2.02)
+
+Chart saved: fund_quality_distribution_outliers.png
+<Figure size 1200x600 with 1 Axes>
+
+============================================================================
+[87] id=None
+============================================================================
+--- Zero versus blank on financial fields ---
+The Deal Status definitions distinguish "= 0" from "empty". A blank and a zero are different claims, so this split is a finding, not bookkeeping.
+
+  Capital Invested     blank  11.5%   exactly zero   0.8%   non-zero  87.7%
+  Current Cost         blank   5.1%   exactly zero  26.3%   non-zero  68.5%
+  Unrealized Value     blank   1.2%   exactly zero  33.2%   non-zero  65.6%
+  Realized Proceeds    blank  10.7%   exactly zero  56.6%   non-zero  32.7%
+
+--- CONSISTENCY AND VALIDITY RULES ---
+                                                          rule  applicable_rows  violations  rate
+                                         Capital Invested >= 0            46055           1  0.00
+                                             Current Cost >= 0            49378           2  0.00
+  Realized Proceeds < 0 (legitimate under Current, count only)            46464          95  0.20
+                         Initial Investment Date <= As At Date            23852           6  0.03
+                          Total Value == Unrealized + Realized            46577         624  1.34
+                              Current Cost <= Capital Invested            44687         210  0.47
+                               Current => Unrealized Value > 0            28381           9  0.03
+                    Current => Realized Proceeds <= 0 or blank            28381           0  0.00
+           Partially Exited => Unrealized > 0 and Realized > 0             5753          10  0.17
+                 Fully Exited => Unrealized Value = 0 or blank            10895           0  0.00
+      Fully Exited => Realized Proceeds OR Total Value present            10895           0  0.00
+Written Off => Unrealized = 0, Realized = 0, Cost = 0 or blank             2478          26  1.05
+        Written Down => Unrealized = 0, Realized = 0, Cost > 0             3096           6  0.19
+                    Realized Proceeds non-decreasing over time            36901         415  1.12
+                     Capital Invested non-decreasing over time            36648         976  2.66
+                                  Deal Status does not regress            41055         300  0.58
+
+(rate is % of applicable rows)
+
+Wrote /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/reports/consistency_rule_results.csv
+
+
