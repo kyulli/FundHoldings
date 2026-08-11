@@ -1,0 +1,665 @@
+/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/camelot/parsers/base.py:302: UserWarning: No tables found in table area (0, 0, 612.0, 792.0)
+  cols, rows, v_s, h_s = self._generate_columns_and_rows(bbox, user_cols)
+/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/camelot/parsers/base.py:302: UserWarning: No tables found in table area (109.16000375000002, 197.42827729999996, 553.566053532661, 690.4104882000001)
+  cols, rows, v_s, h_s = self._generate_columns_and_rows(bbox, user_cols)
+/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/camelot/parsers/base.py:302: UserWarning: No tables found in table area (0, 0, 612.0, 792.0)
+  cols, rows, v_s, h_s = self._generate_columns_and_rows(bbox, user_cols)
+/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/camelot/parsers/base.py:302: UserWarning: No tables found in table area (52.664, 656.13, 543.99704, 810.4374127659574)
+  cols, rows, v_s, h_s = self._generate_columns_and_rows(bbox, user_cols)
+/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/camelot/parsers/base.py:302: UserWarning: No tables found in table area (52.664, 116.26863999999999, 561.96152, 688.8360527659574)
+  cols, rows, v_s, h_s = self._generate_columns_and_rows(bbox, user_cols)
+/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/camelot/parsers/base.py:302: UserWarning: No tables found in table area (80.0002, 401.0473, 535.1694, 615.8875)
+  cols, rows, v_s, h_s = self._generate_columns_and_rows(bbox, user_cols)
+/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/camelot/parsers/base.py:302: UserWarning: No tables found in table area (0, 0, 612.0, 792.0)
+  cols, rows, v_s, h_s = self._generate_columns_and_rows(bbox, user_cols)
+PDF root   : /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/original_pdf_files
+Vendor CSV : /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/data/holdings_anonymized.csv  (exists=True)
+Output     : /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/outputs/original_pdf_survey
+
+Staged 23 PDFs across 23 funds.
+Staging tree: /var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging
+
+Fund IDs cleaned for registry/vendor lookup:
+  A103ce5(OCR)               -> A103ce5
+  A2234f1_(mgr_A12c595)      -> A2234f1
+  A6fcde0_(mgr_A6f625f)      -> A6fcde0
+  A9ffbf3_(mgr_Ad7e703)      -> A9ffbf3
+
+Patched batch_runner.CSV_PATH
+  from /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/holdings_anonymized.csv
+  to   /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/data/holdings_anonymized.csv
+
+==============================================================================
+BATCH SURVEY (route -> extract -> compare)
+==============================================================================
+
+=== A0d2a71 :: FINAL_-_SYN_Ventures_Fund_II_LP_and_II-A_FS_2024_.pdf :: position_level ===
+{
+  "fund_id": "A0d2a71",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A0d2a71/FINAL_-_SYN_Ventures_Fund_II_LP_and_II-A_FS_2024_.pdf",
+  "as_of": "2024-12-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "audited_portfolio_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "text_fallback",
+  "position_count": 10,
+  "status": "ran",
+  "comparability_status": "comparable",
+  "match": 18,
+  "mismatch": 0,
+  "entities_mapped": 9
+}
+
+=== A103ce5 :: Castanea_Fund_III_12.31.25_FS.pdf :: scanned_financial_statements ===
+FAILED {'fund_id': 'A103ce5', 'pdf': '/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A103ce5/Castanea_Fund_III_12.31.25_FS.pdf', 'status': 'failed', 'error': "ModuleNotFoundError: No module named 'pytesseract'", 'document_class': 'financial_statements_with_schedule', 'extraction_mode': 'scanned_financial_statements'}
+
+=== A1137b9 :: Bain_Capital_Venture_Coinvest_Fund_IV_Cover_Letter_12.31.24.pdf :: manual_review ===
+{
+  "fund_id": "A1137b9",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A1137b9/Bain_Capital_Venture_Coinvest_Fund_IV_Cover_Letter_12.31.24.pdf",
+  "as_of": "2024-12-31",
+  "document_class": "unknown",
+  "template_family": null,
+  "extraction_mode": "manual_review",
+  "selected_parser": null,
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "manual_review",
+  "onboarding_status": null,
+  "compare_allowed": false
+}
+
+=== A2234f1 :: Matrix_Partners_IX_L.P._2024_Audited_Financial_Statements.pdf :: position_level ===
+FAILED {'fund_id': 'A2234f1', 'pdf': '/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A2234f1/Matrix_Partners_IX_L.P._2024_Audited_Financial_Statements.pdf', 'status': 'failed', 'error': 'PDFTextExtractionNotAllowed: Text extraction is not allowed: /var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A2234f1/Matrix_Partners_IX_L.P._2024_Audited_Financial_Statements.pdf', 'document_class': 'financial_statements_with_schedule', 'extraction_mode': 'position_level'}
+
+=== A29c2b9 :: 2025-06-20_Quarterly_Report_03.31.25_ISQ__Fidelity_Evergreen_Private_Credit_Offshore_Fund_LP.pdf :: manual_review ===
+{
+  "fund_id": "A29c2b9",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A29c2b9/2025-06-20_Quarterly_Report_03.31.25_ISQ__Fidelity_Evergreen_Private_Credit_Offshore_Fund_LP.pdf",
+  "as_of": "2025-03-31",
+  "document_class": "unknown",
+  "template_family": null,
+  "extraction_mode": "manual_review",
+  "selected_parser": null,
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "manual_review",
+  "onboarding_status": null,
+  "compare_allowed": false
+}
+
+=== A2a9ea5 :: Accel_Leaders_4_L.P._Financial_Report_December_31_2024.pdf :: position_level ===
+{
+  "fund_id": "A2a9ea5",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A2a9ea5/Accel_Leaders_4_L.P._Financial_Report_December_31_2024.pdf",
+  "as_of": "2024-12-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "condensed_hedge_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "text_fallback",
+  "position_count": 12,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "entities_mapped": 0
+}
+
+=== A41fefa :: 2024_Q4_Investor_Letter_-_Imaginary_Venture_Capital_Partners_II_LP.pdf :: manual_review ===
+{
+  "fund_id": "A41fefa",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A41fefa/2024_Q4_Investor_Letter_-_Imaginary_Venture_Capital_Partners_II_LP.pdf",
+  "as_of": "unknown",
+  "document_class": "unknown",
+  "template_family": null,
+  "extraction_mode": "manual_review",
+  "selected_parser": null,
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "manual_review",
+  "onboarding_status": null,
+  "compare_allowed": false
+}
+
+=== A4f0eca :: CGF2010_Audit_Report_2024.pdf :: position_level ===
+{
+  "fund_id": "A4f0eca",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A4f0eca/CGF2010_Audit_Report_2024.pdf",
+  "as_of": "2024-12-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "condensed_hedge_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "pdfplumber",
+  "position_count": 44,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "entities_mapped": 0
+}
+
+=== A5a0710 :: INDSFII_06-30-25_ML.pdf :: manual_review ===
+{
+  "fund_id": "A5a0710",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A5a0710/INDSFII_06-30-25_ML.pdf",
+  "as_of": "unknown",
+  "document_class": "unknown",
+  "template_family": null,
+  "extraction_mode": "manual_review",
+  "selected_parser": null,
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "manual_review",
+  "onboarding_status": null,
+  "compare_allowed": false
+}
+
+=== A6fcde0 :: 2025-04-29_ILPA_Fee_Reporting_Brown_University_Brown_University_American_Rivers_Fund_LLC.pdf :: manual_review ===
+{
+  "fund_id": "A6fcde0",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A6fcde0/2025-04-29_ILPA_Fee_Reporting_Brown_University_Brown_University_American_Rivers_Fund_LLC.pdf",
+  "as_of": "unknown",
+  "document_class": "unknown",
+  "template_family": null,
+  "extraction_mode": "manual_review",
+  "selected_parser": null,
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "manual_review",
+  "onboarding_status": null,
+  "compare_allowed": false
+}
+
+=== A729d8b :: PERRY_CREEK_CAPITAL_PARTNERS_LP-_Quarterly_Report_03-31-2025.pdf :: fund_aggregate_only ===
+{
+  "fund_id": "A729d8b",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A729d8b/PERRY_CREEK_CAPITAL_PARTNERS_LP-_Quarterly_Report_03-31-2025.pdf",
+  "as_of": "2025-03-31",
+  "document_class": "financial_statements_aggregate_only",
+  "template_family": null,
+  "extraction_mode": "fund_aggregate_only",
+  "selected_parser": null,
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "entities_mapped": 0
+}
+
+=== A87a21d :: COF_2.0_-_Q1_25_Letter.pdf :: manual_review ===
+{
+  "fund_id": "A87a21d",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A87a21d/COF_2.0_-_Q1_25_Letter.pdf",
+  "as_of": "2025-05-07",
+  "document_class": "unknown",
+  "template_family": null,
+  "extraction_mode": "manual_review",
+  "selected_parser": null,
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "manual_review",
+  "onboarding_status": null,
+  "compare_allowed": false
+}Traceback (most recent call last):
+  File "/Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/run_all_original_pdfs.py", line 330, in main
+    res = run_ocr_case(pdf, args.ocr_role, as_of=None)
+  File "/Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/run_all_original_pdfs.py", line 171, in run_ocr_case
+    return run_scanned_ocr_case(
+        pdf_path=pdf.resolve(),
+    ...<5 lines>...
+        as_of_expected=as_of,
+    )
+  File "/Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/src/pdf_validation/castanea_runner.py", line 61, in run_scanned_ocr_case
+    payload = run_extract(
+        pdf_path=pdf_path,
+    ...<9 lines>...
+        auto_template=False,
+    )
+ModuleNotFoundError: No module named 'pytesseract'
+
+
+=== A9ffbf3 :: Era_Ventures_LP_-_2024_Audited_Financial_Statements.pdf :: position_level ===
+{
+  "fund_id": "A9ffbf3",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/A9ffbf3/Era_Ventures_LP_-_2024_Audited_Financial_Statements.pdf",
+  "as_of": "2024-12-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "audited_portfolio_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "pdfplumber",
+  "position_count": 6,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "entities_mapped": 0
+}
+
+=== Aa71003 :: 03-31-2025_-_Financial_Statements_-_Master_Holdings_Combined_.pdf :: manual_review ===
+{
+  "fund_id": "Aa71003",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Aa71003/03-31-2025_-_Financial_Statements_-_Master_Holdings_Combined_.pdf",
+  "as_of": "2025-03-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": null,
+  "extraction_mode": "manual_review",
+  "selected_parser": null,
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "manual_review",
+  "onboarding_status": null,
+  "compare_allowed": false
+}
+
+=== Aa7f6d4 :: Imaginary_Venture_Capital_Partners_IV_LP_1Q26_Unaudited_Financials.pdf :: position_level ===
+{
+  "fund_id": "Aa7f6d4",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Aa7f6d4/Imaginary_Venture_Capital_Partners_IV_LP_1Q26_Unaudited_Financials.pdf",
+  "as_of": "2026-03-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "simple_lot_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "text_fallback",
+  "position_count": 1,
+  "status": "ran",
+  "comparability_status": "comparable",
+  "match": 2,
+  "mismatch": 0,
+  "entities_mapped": 1
+}
+
+=== Aa82eac :: SCP_VI_Financials_Q1-2026.pdf :: position_level_inferred ===
+FAILED {'fund_id': 'Aa82eac', 'pdf': '/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Aa82eac/SCP_VI_Financials_Q1-2026.pdf', 'status': 'failed', 'error': 'PDFTextExtractionNotAllowed: Text extraction is not allowed: /var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Aa82eac/SCP_VI_Financials_Q1-2026.pdf', 'document_class': 'financial_statements_with_schedule', 'extraction_mode': 'position_level_inferred'}
+
+=== Ab1beeb :: NCH_New_Europe_Property_Fund_LP_-_Audited_Financial_Statements_as_of_31-Dec-2024.pdf :: position_level ===
+{
+  "fund_id": "Ab1beeb",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Ab1beeb/NCH_New_Europe_Property_Fund_LP_-_Audited_Financial_Statements_as_of_31-Dec-2024.pdf",
+  "as_of": "2024-12-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "condensed_hedge_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "pdfplumber",
+  "position_count": 0,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "entities_mapped": 0
+}
+
+=== Ab4033d :: 03-31-26-Financial_Statements.pdf :: position_level_inferred ===
+{
+  "fund_id": "Ab4033d",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Ab4033d/03-31-26-Financial_Statements.pdf",
+  "as_of": "2026-03-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "generic_holdings_schedule",
+  "extraction_mode": "position_level_inferred",
+  "selected_parser": "text_fallback",
+  "position_count": 3,
+  "status": "discover_only",
+  "comparability_status": "needs_review",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "position_level_inferred",
+  "onboarding_status": "inferred_ready",
+  "compare_allowed": false,
+  "inferred_schema": {
+    "found": true,
+    "source_page": 6,
+    "logical_columns": [
+      "entity_name",
+      "geography",
+      "industry",
+      "security_description",
+      "shares",
+      "cost",
+      "fair_value"
+    ],
+    "column_names": [
+      "company_name",
+      "geography",
+      "industry",
+      "round",
+      "shares",
+      "cost",
+      "fair_value"
+    ],
+    "column_map": {
+      "company_name": 0,
+      "geography": 1,
+      "industry": 2,
+      "round": 3,
+      "shares": 4,
+      "cost": 5,
+      "fair_value": 6
+    },
+    "separators": [
+      177.91630496,
+      240.9016202375,
+      294.525723655,
+      365.09973447000004,
+      423.65181786750003,
+      461.692439525
+    ],
+    "mids": {
+      "entity_name": 137.836472475,
+      "geography": 217.996137445,
+      "industry": 263.80710303,
+      "security_description": 325.24434428,
+      "shares": 404.95512466,
+      "cost": 442.34851107500003,
+      "fair_value": 481.03636797499996
+    },
+    "required_present": [
+      "cost",
+      "fair_value"
+    ],
+    "missing_required": [],
+    "comparison_grain": "company",
+    "company_row_headers": false,
+    "inference_confidence": 0.95,
+    "header_hits": [
+      "cost",
+      "entity_name",
+      "fair_value",
+      "geography",
+      "industry",
+      "security_description",
+      "shares"
+    ],
+    "source": "header_band",
+    "unmapped_headers": []
+  }
+}
+
+=== Abb96b2 :: Peppertree_Capital_Fund_X_QP_LP_-_Q1_2025_Report.pdf :: position_level_inferred ===
+{
+  "fund_id": "Abb96b2",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Abb96b2/Peppertree_Capital_Fund_X_QP_LP_-_Q1_2025_Report.pdf",
+  "as_of": "2025-03-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "generic_holdings_schedule",
+  "extraction_mode": "position_level_inferred",
+  "selected_parser": "text_fallback",
+  "position_count": 27,
+  "status": "discover_only",
+  "comparability_status": "needs_review",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "position_level_inferred",
+  "onboarding_status": "inferred_ready",
+  "compare_allowed": false,
+  "inferred_schema": {
+    "found": true,
+    "source_page": 18,
+    "logical_columns": [
+      "industry",
+      "cost",
+      "fair_value"
+    ],
+    "column_names": [
+      "company_name",
+      "industry",
+      "cost",
+      "fair_value"
+    ],
+    "column_map": {
+      "company_name": 0,
+      "industry": 1,
+      "cost": 2,
+      "fair_value": 3
+    },
+    "separators": [
+      362.969679,
+      442.590981
+    ],
+    "mids": {
+      "industry": 308.14518,
+      "cost": 417.794178,
+      "fair_value": 467.387784
+    },
+    "required_present": [
+      "cost",
+      "fair_value"
+    ],
+    "missing_required": [],
+    "comparison_grain": "company",
+    "company_row_headers": true,
+    "inference_confidence": 0.95,
+    "header_hits": [
+      "cost",
+      "fair_value",
+      "industry"
+    ],
+    "source": "header_band",
+    "unmapped_headers": []
+  }
+}
+
+=== Ae7bb35 :: 2024-12-31_Altor_Fund_III_-_Combined_Audited_Financial_Statements.pdf :: position_level ===
+{
+  "fund_id": "Ae7bb35",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Ae7bb35/2024-12-31_Altor_Fund_III_-_Combined_Audited_Financial_Statements.pdf",
+  "as_of": "unknown",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "audited_portfolio_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "pdfplumber",
+  "position_count": 31,
+  "status": "ran",
+  "comparability_status": "not_comparable",
+  "match": 0,
+  "mismatch": 0,
+  "entities_mapped": 0
+}
+
+=== Aeedb32 :: FINAL_-_SYN_Ventures_Seed_Fund_I_LP_FS_2024.pdf :: position_level ===
+{
+  "fund_id": "Aeedb32",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Aeedb32/FINAL_-_SYN_Ventures_Seed_Fund_I_LP_FS_2024.pdf",
+  "as_of": "2024-12-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "audited_portfolio_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "text_fallback",
+  "position_count": 5,
+  "status": "ran",
+  "comparability_status": "comparable",
+  "match": 8,
+  "mismatch": 0,
+  "entities_mapped": 4
+}
+
+=== Af8d59f :: 34729_GFVI_6-30-2025_FS.pdf :: position_level_inferred ===
+{
+  "fund_id": "Af8d59f",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Af8d59f/34729_GFVI_6-30-2025_FS.pdf",
+  "as_of": "2025-06-30",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "generic_holdings_schedule",
+  "extraction_mode": "position_level_inferred",
+  "selected_parser": "text_fallback",
+  "position_count": 5,
+  "status": "discover_only",
+  "comparability_status": "needs_review",
+  "match": 0,
+  "mismatch": 0,
+  "blocked_reason": "position_level_inferred",
+  "onboarding_status": "inferred_ready",
+  "compare_allowed": false,
+  "inferred_schema": {
+    "found": true,
+    "source_page": 5,
+    "logical_columns": [
+      "shares",
+      "cost_per_share",
+      "cost",
+      "fmv_per_share",
+      "fair_value"
+    ],
+    "column_names": [
+      "company_name",
+      "shares",
+      "cost_per_share",
+      "cost",
+      "fmv_per_share",
+      "fair_value"
+    ],
+    "column_map": {
+      "company_name": 0,
+      "shares": 1,
+      "cost_per_share": 2,
+      "cost": 3,
+      "fmv_per_share": 4,
+      "fair_value": 5
+    },
+    "separators": [
+      275.126658,
+      349.211628,
+      421.6188360000001,
+      484.19203800000014
+    ],
+    "mids": {
+      "shares": 238.48829999999998,
+      "cost_per_share": 311.765016,
+      "cost": 386.6582400000001,
+      "fmv_per_share": 456.57943200000005,
+      "fair_value": 511.80464400000017
+    },
+    "required_present": [
+      "cost",
+      "fair_value"
+    ],
+    "missing_required": [],
+    "comparison_grain": "lot",
+    "company_row_headers": true,
+    "inference_confidence": 0.95,
+    "header_hits": [
+      "cost",
+      "cost_per_share",
+      "fair_value",
+      "fmv_per_share",
+      "shares"
+    ],
+    "source": "header_band",
+    "unmapped_headers": []
+  }
+}
+
+=== Affdff0 :: 1Q26_Unaudited_Financials_Positive_Sum_III.pdf :: position_level ===
+{
+  "fund_id": "Affdff0",
+  "pdf": "/var/folders/s9/8lwyvym11jq10x6wm3r2wmgm0000gn/T/pdf_survey_staging/Affdff0/1Q26_Unaudited_Financials_Positive_Sum_III.pdf",
+  "as_of": "2026-03-31",
+  "document_class": "financial_statements_with_schedule",
+  "template_family": "simple_lot_schedule",
+  "extraction_mode": "position_level",
+  "selected_parser": "text_fallback",
+  "position_count": 13,
+  "status": "ran",
+  "comparability_status": "comparable",
+  "match": 10,
+  "mismatch": 4,
+  "entities_mapped": 7
+}
+MISMATCHES: [
+  {
+    "company": "Fortell Research Inc.",
+    "field": "current_cost",
+    "pdf": "696971",
+    "csv": "10000000.0",
+    "diff": "9303029.0"
+  },
+  {
+    "company": "Fortell Research Inc.",
+    "field": "unrealized_value",
+    "pdf": "696971",
+    "csv": "10000000.0",
+    "diff": "9303029.0"
+  },
+  {
+    "company": "Ridgeline, Inc.",
+    "field": "current_cost",
+    "pdf": "1000000",
+    "csv": "12499997.0",
+    "diff": "11499997.0"
+  },
+  {
+    "company": "Ridgeline, Inc.",
+    "field": "unrealized_value",
+    "pdf": "1000000",
+    "csv": "12499997.0",
+    "diff": "11499997.0"
+  }
+]
+
+Wrote /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/outputs/original_pdf_survey/batch/batch_summary.json
+
+==============================================================================
+SURVEY SUMMARY
+==============================================================================
+fund          pdfs   ran  fail   cmp   match   mism  modes
+------------------------------------------------------------------------------
+A0d2a71          1     1     0     1      18      0  position_level
+A103ce5          1     0     1     0       0      0  scanned_financial_statements
+A1137b9          1     1     0     0       0      0  manual_review
+A2234f1          1     0     1     0       0      0  position_level
+A29c2b9          1     1     0     0       0      0  manual_review
+A2a9ea5          1     1     0     0       0      0  position_level
+A41fefa          1     1     0     0       0      0  manual_review
+A4f0eca          1     1     0     0       0      0  position_level
+A5a0710          1     1     0     0       0      0  manual_review
+A6fcde0          1     1     0     0       0      0  manual_review
+A729d8b          1     1     0     0       0      0  fund_aggregate_only
+A87a21d          1     1     0     0       0      0  manual_review
+A9ffbf3          1     1     0     0       0      0  position_level
+Aa71003          1     1     0     0       0      0  manual_review
+Aa7f6d4          1     1     0     1       2      0  position_level
+Aa82eac          1     0     1     0       0      0  position_level_inferred
+Ab1beeb          1     1     0     0       0      0  position_level
+Ab4033d          1     1     0     0       0      0  position_level_inferred
+Abb96b2          1     1     0     0       0      0  position_level_inferred
+Ae7bb35          1     1     0     0       0      0  position_level
+Aeedb32          1     1     0     1       8      0  position_level
+Af8d59f          1     1     0     0       0      0  position_level_inferred
+Affdff0          1     1     0     1      10      4  position_level
+------------------------------------------------------------------------------
+TOTAL           23    20     3            38      4
+
+Per-PDF detail : /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/outputs/original_pdf_survey/reports/survey_by_pdf.csv
+Per-fund rollup: /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/outputs/original_pdf_survey/reports/survey_by_fund.csv
+
+==============================================================================
+DEDICATED SCANNED-OCR PASS  (A103ce5, role=validate)
+==============================================================================
+
+--- Castanea Fund III 12.31.25 FS.pdf ---
+  FAILED: ModuleNotFoundError: No module named 'pytesseract'
+
+OCR detail written to /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/outputs/original_pdf_survey/reports/ocr_results.json
+
+Done in 1.5 min. Manifest: /Users/aprilmikrokosmos/Downloads/DATA2050_Capstone/FundHoldings/pdf_validation/outputs/original_pdf_survey/reports/run_manifest.json
