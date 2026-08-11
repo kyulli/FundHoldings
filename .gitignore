@@ -14,6 +14,11 @@ pdf_validation/.venv/
 pdf_validation/.venv_ocr/
 pdf_validation/.pytest_cache/
 
+# Quarterly cleaning pipeline outputs (runs, snapshots, staged PDFs)
+cleaning_pipeline/runs/
+cleaning_pipeline/snapshots/
+cleaning_pipeline/incoming_pdfs/
+
 # Python
 __pycache__/
 *.py[cod]
