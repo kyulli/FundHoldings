@@ -93,6 +93,55 @@ UNNAMED_AGGREGATE = [
     r'(?i)^\s*secondary\s+market\s+investments?\s*$',
 ]
 
+# --- Category 3b: labels and placeholders found by Phase 3 -----------------
+# Twenty-one names that reached entity resolution as 'holding' but are not
+# companies. Found by resolve.py, which had to exclude them by hand before
+# fuzzy matching would merge them into fake entities: 'company A' and
+# 'company B' score 96% similar, and the three 'Source Code' variants mask
+# three unrelated positions. Classifying them here means the exclusion lives
+# in one place and both phases agree. All are real exposure, so they stay
+# scorable; none is a resolvable entity.
+
+# A closed vocabulary on both sides of the dash. Anchoring on known region and
+# sector words is what keeps a real company off this pattern -- an unanchored
+# '<word> - <word>' would sweep up 'Bridge Point - Series A' and similar.
+_GEO = (r'(?:North\s+America|South\s+America|Latin\s+America|United\s+States|'
+        r'United\s+Kingdom|Europe|Asia|Africa|Australia|Oceania|Global|'
+        r'France|Germany|Japan|China|India|Canada|Brazil|Mexico)')
+_SECTOR = (r'(?:Information\s+Technology|Consumer\s+Staples|Consumer\s+Discretionary|'
+           r'Real\s+Estate|Health\s*Care|Financials?|Industrials|Materials|'
+           r'Energy|Utilities|Technology|Telecommunications?|Insurance|'
+           r'Communication\s+Services|Legal\s+services\s+mixed|'
+           r'Pharmaceuticals,?\s+biotechnology\s+and\s+life\s+sciences)')
+_GEO_OR_SECTOR = f'(?:{_GEO}|{_SECTOR})'
+
+LABEL_PLACEHOLDER = [
+    # Sector/geography label sitting in the company-name column, either order,
+    # with an optional third segment: 'United States - Information Technology',
+    # 'Information Technology - United States',
+    # 'Technology - United States - Insurance'.
+    # 43 rows, 34 of them from manager A4a62c2 -- a mapping fault at one source.
+    rf'(?i)^\s*{_GEO_OR_SECTOR}\s*-\s*{_GEO_OR_SECTOR}'
+    rf'(?:\s*-\s*{_GEO_OR_SECTOR})?\s*$',
+
+    # A GP's own redaction of a confidential holding: region/sector plus a bare
+    # letter standing in for the name. 'Europe - Materials company A'.
+    # 16 rows, all from manager A99a662. Requires the dash, so a real company
+    # whose name happens to end in 'company A' is not caught.
+    r'(?i)^\s*.+\s+-\s+.+\s+company\s+[A-Z]\s*$',
+
+    # The extract's anonymisation placeholder, reused for different underlying
+    # entities within the same fund: 'Source Code', 'Source Code II',
+    # 'Source Code RMB'. Not a currency or vintage variant of one company --
+    # Type of Investment reports the first as a Private Company and the other
+    # two as Fund vehicles. 36 rows across funds A07e679 and A159f57.
+    r'(?i)^\s*Source\s+Code(?:\s+[IVX]+|\s+[A-Z]{3})?\s*$',
+
+    # Aggregate placeholder for individually undisclosed holdings, the same
+    # role 'Seed Investments' plays above. 23 rows across 4 funds.
+    r'(?i)^\s*various\s*$',
+]
+
 # --- Review queue ----------------------------------------------------------
 # Generic-sounding but plausibly real entity names. Never auto-classified.
 REVIEW_QUEUE = [
@@ -119,6 +168,8 @@ def classify_source_asset(value) -> str:
     if _any(ACCOUNTING_ENTRY, text):
         return 'accounting_entry'
     if _any(UNNAMED_AGGREGATE, text):
+        return 'unnamed_aggregate'
+    if _any(LABEL_PLACEHOLDER, text):
         return 'unnamed_aggregate'
     return 'holding'
 

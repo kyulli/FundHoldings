@@ -1,0 +1,127 @@
+{
+  "fund_id": "TEST001",
+  "template_id": "TEST001_synthetic_fund",
+  "schedule_pages": [
+    2
+  ],
+  "line_rules": [
+    {
+      "rule_id": "skip_boilerplate",
+      "kind": "skip",
+      "pattern": null,
+      "prefixes": [
+        "schedule of",
+        "december",
+        "company industry",
+        "total investments",
+        "the accompanying"
+      ],
+      "notes": "Titles, date banner, column headings, grand total, and footnote."
+    },
+    {
+      "rule_id": "company_header",
+      "kind": "company_header",
+      "pattern": "^(?P<company_name>[A-Z][A-Za-z0-9 .,&'()-]+?)\\s+(?P<industry>Technology|Healthcare|Industrials|Fintech|Materials)\\s+(?P<geography>United States|Canada)$",
+      "prefixes": [],
+      "notes": "Company name wraps onto its own line, followed by industry and geography."
+    },
+    {
+      "rule_id": "company_subtotal",
+      "kind": "company_subtotal",
+      "pattern": "^\\$\\s*(?P<cost>[\\d,]+)\\s+\\$\\s*(?P<fair_value>[\\d,]+)\\s+\\$\\s*(?P<unrealized_gain_loss>[\\d,]+)$",
+      "prefixes": [],
+      "notes": "Amounts sit on the line beneath the company name."
+    }
+  ],
+  "template_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "status": "approved",
+  "currency_expected": "USD",
+  "unit_expected": "ones",
+  "fund_name_hints": [
+    "Synthetic Capital Partners III"
+  ],
+  "evidence": [
+    {
+      "rule_id": "company_header",
+      "page": 2,
+      "line": "Northwind Robotics Technologies, Inc. Technology United States",
+      "captured": {
+        "company_name": "Northwind Robotics Technologies, Inc.",
+        "industry": "Technology",
+        "geography": "United States"
+      }
+    },
+    {
+      "rule_id": "company_subtotal",
+      "page": 2,
+      "line": "$ 9,399,996 $ 13,466,158 $ 4,066,162",
+      "captured": {
+        "cost": "9,399,996",
+        "fair_value": "13,466,158",
+        "unrealized_gain_loss": "4,066,162"
+      }
+    },
+    {
+      "rule_id": "company_header",
+      "page": 2,
+      "line": "Bluefin Health Systems Incorporated Healthcare United States",
+      "captured": {
+        "company_name": "Bluefin Health Systems Incorporated",
+        "industry": "Healthcare",
+        "geography": "United States"
+      }
+    },
+    {
+      "rule_id": "company_subtotal",
+      "page": 2,
+      "line": "$ 6,300,000 $ 10,326,260 $ 4,026,260",
+      "captured": {
+        "cost": "6,300,000",
+        "fair_value": "10,326,260",
+        "unrealized_gain_loss": "4,026,260"
+      }
+    },
+    {
+      "rule_id": "company_header",
+      "page": 2,
+      "line": "Cascade Logistics Holdings, Inc. Industrials United States",
+      "captured": {
+        "company_name": "Cascade Logistics Holdings, Inc.",
+        "industry": "Industrials",
+        "geography": "United States"
+      }
+    },
+    {
+      "rule_id": "company_subtotal",
+      "page": 2,
+      "line": "$ 1,000,000 $ 1,039,902 $ 39,902",
+      "captured": {
+        "cost": "1,000,000",
+        "fair_value": "1,039,902",
+        "unrealized_gain_loss": "39,902"
+      }
+    }
+  ],
+  "generated_by": {
+    "backend": "echo",
+    "source_pdf": "/tmp/tg_test/synthetic_fund.pdf",
+    "prompt_version": "1",
+    "generated_at_utc": "2026-08-11T18:46:14.898632+00:00",
+    "schema_version": "1.0.0"
+  },
+  "review": {
+    "reviewer": "Kyulli",
+    "approved_at_utc": "2026-08-11T18:46:28.425806+00:00",
+    "checks": {
+      "passed": true,
+      "checks_run": 5,
+      "checks_failed": 0,
+      "failures": [],
+      "coverage": 1.0,
+      "company_count": 5,
+      "notes": []
+    },
+    "forced": false
+  }
+}

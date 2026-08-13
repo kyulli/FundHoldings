@@ -79,6 +79,53 @@ def test_unnamed_aggregate(name):
     assert classify_source_asset(name) == 'unnamed_aggregate'
 
 
+# --- labels and placeholders surfaced by Phase 3 ---------------------------
+# Every case below is a real Source Asset value that reached entity resolution
+# classified as 'holding' and had to be excluded by hand there before fuzzy
+# matching merged it into a fake company. They belong to the classifier, not
+# to resolve.py, so both phases agree on what a company is.
+
+@pytest.mark.parametrize('name', [
+    # Sector/geography label in the company-name column. 43 rows, 34 of them
+    # from one manager (A4a62c2) -- a mapping fault at a single source.
+    'United States - Information Technology',
+    'France - Consumer Staples',
+    'United Kingdom - Real Estate',
+    'South America - Real Estate',
+    'United States - Materials',
+    'United States - Technology',
+    'United States - Insurance',
+    'United States - Financial',
+    'Information Technology - United States',        # reversed order
+    'Technology - United States - Insurance',        # three segments
+
+    # A GP's own redaction: region/sector plus a bare letter. 16 rows, all from
+    # manager A99a662. 'company A' and 'company B' score 96% similar, so fuzzy
+    # matching would otherwise fuse two deliberately distinct holdings.
+    'Europe - Materials company A',
+    'Europe - Utilities company B',
+    'North America - Energy company A',
+    'North America - Information technology company A',
+    'North America - Information technology company B',
+    'North America - Legal services mixed company C',
+    'Global - Legal services mixed company B',
+    'North America - Pharmaceuticals, biotechnology and life sciences company B',
+
+    # The extract's anonymisation placeholder, reused for three unrelated
+    # masked positions inside the same fund -- not a currency or vintage
+    # variant of one company.
+    'Source Code',
+    'Source Code II',
+    'Source Code RMB',
+
+    # Aggregate placeholder for undisclosed holdings, same role as
+    # 'Seed Investments'. 23 rows across 4 funds.
+    'Various',
+])
+def test_label_placeholder(name):
+    assert classify_source_asset(name) == 'unnamed_aggregate'
+
+
 # --- false positives: these must survive as holdings -----------------------
 
 @pytest.mark.parametrize('name', [
@@ -94,6 +141,18 @@ def test_unnamed_aggregate(name):
     'Bitmain (Crimson Partners SPV)',
     'Axonius, Inc.',
     'Bitcoin (BTC)',
+    # Guards on the label patterns above. The dash-separated rule only fires
+    # when BOTH sides come from the region/sector vocabulary, so a real name
+    # carrying a dash, a region word, or a sector word must stay a holding.
+    'Bridge Point - Series A',
+    'Aera Technology - Series D',
+    'United Airlines',                       # region word, no dash
+    'Energy Vault Holdings, Inc.',           # sector word, no dash
+    'Real Estate Webmasters',                # sector word leading the name
+    'Global Payments Inc.',                  # region word leading the name
+    'Insurance Technologies Corporation',
+    'Source Code Capital Fund IV',           # placeholder prefix, real fund
+    'Company A Holdings Ltd',                # 'company' + letter, but no dash
 ])
 def test_real_holdings_survive(name):
     assert classify_source_asset(name) == 'holding'

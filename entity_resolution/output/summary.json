@@ -1,0 +1,11 @@
+{
+  "distinct_names_in": 8612,
+  "candidate_pairs": 656,
+  "auto_merge_pairs": 536,
+  "review_pairs": 120,
+  "clusters": 427,
+  "names_absorbed": 475,
+  "clusters_spanning_multiple_funds": 422,
+  "clusters_with_multiple_vendor_ids": 427,
+  "distinct_names_after_merge": 8137
+}
