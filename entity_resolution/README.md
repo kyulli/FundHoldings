@@ -497,7 +497,7 @@ it is the consumer of `entity_aliases.json` and still in use.
 
 ## Phase 3 Completion Summary (August 2026)
 
-**Status:** ✅ Complete
+**Status:** Complete
 
 All 120 queued pairs have been manually reviewed and decided:
 - **10 merged** — same company, different spellings (Lepton/Lepton AI Inc., Kuaidi/Kuaidian, etc.)
