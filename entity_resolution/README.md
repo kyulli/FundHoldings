@@ -61,7 +61,7 @@ one classifier, not two.
 entries, subtotals, aggregate buckets) for diagnostics only; it is not the
 default and should not be used to build aliases.
 
-## Result on the current book
+## Result on the current book (Phase 3 Complete)
 
 | | |
 |---|---|
@@ -70,12 +70,19 @@ default and should not be used to build aliases.
 | Auto-merged pairs | 536 |
 | Clusters formed | 427 |
 | Names absorbed | 475 |
-| Distinct names after merge | 8,137 |
 | Auto-rejected for a differing vintage/series number (audit trail, no review) | 192 |
-| Pairs needing a human | 120 |
+| Pairs needing human review | 120 |
+| **Human-approved merges** | **10** |
+| **Manual overrides** (sequence conflicts, special cases) | **1** |
+| **Auto-rejected in review queue** | **107** |
+| **Deferred for followup** | **3** |
 
-Companies with the widest reach after resolution: Stripe (18 funds),
-ByteDance (17), Bitcoin (11), Ethereum (10), Meituan (10).
+**Final output:** 8,706 → 8,220 distinct names after entity resolution  
+450 global aliases promoted to `entity_aliases.json`  
+3,262 rows relabeled with canonical company names
+
+Companies with the widest reach after resolution: Stripe (2 variants, 18 funds),
+ByteDance (4 variants, 17 funds), Bitcoin (2 variants, 11 funds), Ethereum (2 variants, 10 funds), Meituan (2 variants, 10 funds).
 
 Bitcoin and Ethereum appear here because `is_resolvable` classifies on the
 *text* of `Source Asset`, not on `Type of Investment` — a cryptocurrency
@@ -185,14 +192,17 @@ python review.py mark --pair 15 --verdict reject --note "different companies"
 python review.py promote --reviewer "XXX"
 
 # 4. apply to holdings data
-python review.py apply --data ../data/holdings_anonymized.csv
+python review.py apply --data ../data/holdings_anonymized.csv \
+  --output-name "holdings_anonymized(after_entity_resolution).csv"
 
-# regression suite
+# regression suite (36 tests, all passing)
 python test_resolve.py
 ```
 
 To promote only auto-merged clusters and leave the queue for later:
 `python review.py promote --reviewer "XXX" --allow-unreviewed`.
+
+**Note on `apply`:** The `--output-name` option lets you control the output filename. Default is `holdings_with_canonical.csv`. The original CSV is never modified — a new file is created with an additional `canonical_company` column.
 
 ### Detailed workflow (structured audit trail)
 
@@ -340,19 +350,33 @@ zero-risk mechanical merge, not a threshold change.
 
 ## Outputs
 
+**After `resolve.py`:**
 | File | Contents |
 |---|---|
 | `entity_clusters.csv` | 427 merged groups, canonical name, funds, vendor IDs |
-| `entity_review_queue.csv` | 120 pairs needing a human, with evidence columns |
+| `entity_review_queue.csv` | 120 pairs needing human decision, with evidence columns |
 | `sequence_conflicts_rejected.csv` | 192 auto-rejected vintage/series pairs, audit trail only |
 | `entity_pairs_all.csv` | Every scored candidate that reached review or merge, and why |
 | `data_quality_non_company.csv` | Names that are not companies (see below) |
-| `review_records.jsonl` | Complete audit trail of human verdicts (from `record_review.py`); one JSON object per line with verdict type, reason code, confidence, evidence, etc. |
-| `manual_overrides.csv` | Verdicts recorded by `review.py override` or overrides to sequence-conflict pairs; read by `promote` |
 | `proposed_aliases.json` | Preview of the alias map; not yet promoted |
 | `summary.json` | Run statistics |
-| `holdings_with_canonical.csv` | Holdings plus a `canonical_company` column |
-| `canonical_company_reach.csv` | Per-company fund and manager reach |
+
+**After review and `record_review.py` (optional detailed audit trail):**
+| File | Contents |
+|---|---|
+| `review_records.jsonl` | Complete structured audit trail; one JSON object per line with verdict type, reason code, confidence, evidence, reviewed_by, reviewed_at |
+| `manual_overrides.csv` | Verdicts recorded by `review.py override` or special cases; read by `promote` |
+
+**After `review.py promote`:**
+| File | Contents |
+|---|---|
+| `entity_aliases.json` | 450 final aliases (427 auto-merge + 10 human-approved + 1 override + transitive closure); has `_meta` with promotion stats and audit counts |
+
+**After `review.py apply`:**
+| File | Contents |
+|---|---|
+| `holdings_anonymized(after_entity_resolution).csv` | Full holdings data with added `canonical_company` column; 8,706 → 8,220 distinct names, 3,262 rows relabeled |
+| `canonical_company_reach.csv` | Per-company fund and manager reach; lists companies spanning multiple source names |
 
 Canonical name selection prefers, in order: no parenthetical annotation, has a
 legal suffix, longer, more rows. Without the first rule the longest variant wins
@@ -468,3 +492,25 @@ pdf_validation/PHASE3_INTEGRATION_GUIDE.md
 
 `pdf_validation/src/pdf_validation/entity_mapping.py` is **not** superseded —
 it is the consumer of `entity_aliases.json` and still in use.
+
+---
+
+## Phase 3 Completion Summary (August 2026)
+
+**Status:** ✅ Complete
+
+All 120 queued pairs have been manually reviewed and decided:
+- **10 merged** — same company, different spellings (Lepton/Lepton AI Inc., Kuaidi/Kuaidian, etc.)
+- **3 deferred** — need GP confirmation or further investigation
+- **107 rejected** — confirmed different entities (Whisper/Whisper.ai, Copia/Coral, etc.)
+
+The system has been promoted to `entity_aliases.json` and applied to the full holdings dataset:
+- **Input:** 8,706 distinct company names (51,770 rows in is_resolvable scope)
+- **Output:** 8,220 canonical names (486 collapsed into 450 aliases across 120 funds)
+- **Deliverable:** `holdings_anonymized(after_entity_resolution).csv` with canonical entity assignments
+
+**Regression suite:** 36 real pairs from the book; all tests passing.
+
+**Audit trail:** Complete decision records in `review_records.jsonl` with structured metadata (verdict type, reason code, confidence, evidence, reviewer, timestamp).
+
+This resolves the core requirement from Phase 3: **"Catch the same portfolio company reported under different names across funds."** The resolved dataset is ready for cross-fund analysis of company valuations, manager views, and portfolio construction patterns.
