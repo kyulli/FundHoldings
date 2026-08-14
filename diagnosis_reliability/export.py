@@ -223,6 +223,7 @@ def build_diagnosis_ledger(
         "fund_id",
         "manager_id",
         "source_asset",
+        "canonical_entity",
         "as_at_date",
         "issue_type",
         "field",
@@ -246,6 +247,12 @@ def build_diagnosis_ledger(
         "difference",
         "difference_pct",
         "extraction_quality",
+
+        "entity_resolution_status",
+        "entity_resolution_confidence",
+        "entity_resolution_reason",
+        "entity_resolution_followup",
+
         "mapping_status",
         "comparability_status",
     ]

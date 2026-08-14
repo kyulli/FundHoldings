@@ -52,6 +52,13 @@ class StandardIssue:
     extraction_quality: str | None = None
     parser: str | None = None
 
+    # Entity-resolution evidence
+    canonical_entity: str | None = None
+    entity_resolution_status: str | None = None
+    entity_resolution_confidence: str | None = None
+    entity_resolution_reason: str | None = None
+    entity_resolution_followup: bool | None = None
+    
     # Mapping / comparability evidence
     mapping_status: str | None = None
     mapping_confidence: float | None = None
