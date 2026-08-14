@@ -13,6 +13,16 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
 CLEANING_PIPELINE_DIR = REPO_ROOT / "cleaning_pipeline"
+ENTITY_RESOLUTION_DIR = REPO_ROOT / "entity_resolution"
+ENTITY_RESOLUTION_OUTPUT_DIR = ENTITY_RESOLUTION_DIR / "output"
+
+ENTITY_ALIAS_FILE = (
+    ENTITY_RESOLUTION_OUTPUT_DIR / "proposed_aliases.json"
+)
+
+ENTITY_REVIEW_FILE = (
+    ENTITY_RESOLUTION_OUTPUT_DIR / "review_records.jsonl"
+)
 
 
 # Existing report inputs produced by the team's pipeline

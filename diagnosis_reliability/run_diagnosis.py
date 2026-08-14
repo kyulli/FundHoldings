@@ -12,6 +12,9 @@ from diagnosis_reliability.reliability import assess_reliability
 from diagnosis_reliability.severity import score_issue_severities
 from diagnosis_reliability.export import export_diagnosis_report
 
+from diagnosis_reliability.adapters.entity_resolution_adapter import (
+    enrich_issues_with_entity_resolution,
+)
 
 def run_diagnosis():
     """
@@ -19,7 +22,9 @@ def run_diagnosis():
     """
 
     issues = load_report_issues()
-
+    issues = enrich_issues_with_entity_resolution(
+        issues
+    )
     issues = diagnose_issues(issues)
     issues = score_issue_severities(issues)
     issues = assess_reliability(issues)
@@ -68,4 +73,3 @@ if __name__ == "__main__":
     print(
         f"Report written to: {output_path}"
     )
-    
