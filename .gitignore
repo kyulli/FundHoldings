@@ -32,3 +32,9 @@ venv/
 
 # OS
 .DS_Store
+
+# Office PowerPoint templates — local only
+office_templates/
+
+# Generated Office reporting decks
+office_deck_generator/outputs/

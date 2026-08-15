@@ -446,6 +446,25 @@ def build_reliability_analysis(
         },
         {
             "category": "Evidence Coverage",
+            "metric": "Entity Resolution Evidence Available",
+            "count": count(
+                issues_df["entity_resolution_status"].notna()
+            ),
+            "percent_of_issues": (
+                count(
+                    issues_df["entity_resolution_status"].notna()
+                )
+                / total
+                if total
+                else 0
+            ),
+            "interpretation": (
+                "Entity-resolution evidence has been attached from the "
+                "upstream canonicalization workflow."
+            ),
+        },
+        {
+            "category": "Evidence Coverage",
             "metric": "Entity Mapping Status Known",
             "count": count(
                 issues_df["mapping_status"].notna()
