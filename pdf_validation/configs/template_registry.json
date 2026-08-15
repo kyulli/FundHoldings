@@ -15,10 +15,12 @@
       "extraction_mode": "position_level",
       "schedule_title_patterns": [
         "schedule of investments",
+        "schedules of investments",
         "schedule of investment",
         "schedule of portfolio investments",
         "combined schedule of portfolio investments",
-        "condensed schedule of investments"
+        "condensed schedule of investments",
+        "condensed schedules of investments"
       ]
     },
     "financial_statements_aggregate_only": {
@@ -26,7 +28,10 @@
       "signals_any": [
         "statement of financial condition",
         "statement of assets",
-        "investments, at fair value"
+        "investments, at fair value",
+        "ilpa fee reporting template",
+        "ilpa fee reporting",
+        "nav reconciliation and summary of fees"
       ],
       "require_no_schedule": true
     },
@@ -93,8 +98,8 @@
         "number of shares",
         "fair value"
       ],
-      "min_fingerprint_hits": 2,
-      "schedule_titles": ["condensed schedule of investments"],
+      "min_fingerprint_hits": 3,
+      "schedule_titles": ["condensed schedule of investments", "condensed schedules of investments"],
       "realized_titles": [],
       "comparison_grain": "mixed_condensed",
       "default_fund_hints": ["perry creek"]

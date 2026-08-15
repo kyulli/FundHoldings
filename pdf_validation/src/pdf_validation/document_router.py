@@ -18,10 +18,13 @@ def load_registry(registry_path: Path | None = None) -> dict[str, Any]:
 
 
 def _page_texts(pdf_path: Path, max_pages: int = 25) -> list[tuple[int, str]]:
+    from pdf_validation.watermark import extract_clean_page_text
+
     pages: list[tuple[int, str]] = []
     with pdfplumber.open(pdf_path) as doc:
         for idx, page in enumerate(doc.pages[:max_pages]):
-            pages.append((idx + 1, (page.extract_text() or "").lower()))
+            text, _, _ = extract_clean_page_text(page)
+            pages.append((idx + 1, (text or "").lower()))
     return pages
 
 
@@ -258,13 +261,21 @@ def route_document(pdf_path: Path, registry: dict[str, Any] | None = None) -> di
             score = len(hits)
             if family.get("require_audit_signal") and not (_has_audit_signal(text) or "audited" in filename or "afs" in filename):
                 continue
-            if family_id == "condensed_hedge_schedule" and "condensed schedule" in text:
+            # Only boost true hedge-style condensed schedules (partners' capital %),
+            # not every "Condensed Schedule(s) of Investments" private-fund layout.
+            if (
+                family_id == "condensed_hedge_schedule"
+                and "condensed schedule" in text
+                and ("% of partners' capital" in text or "% of partners’ capital" in text)
+            ):
                 score += 3
             if family_id == "simple_lot_schedule" and "schedule of investment" in text and "schedule of investments" not in text:
                 score += 2
             if family_id == "vc_lot_schedule" and "schedule of investments" in text and "cost/share" in text:
                 score += 2
-            if family_id == "audited_portfolio_schedule" and (_has_audit_signal(text) or "final -" in filename):
+            if family_id == "audited_portfolio_schedule" and (
+                _has_audit_signal(text) or "final -" in filename
+            ) and ("shares or principal" in text or "net unrealized" in text):
                 score += 2
             if score >= int(family.get("min_fingerprint_hits", 2)):
                 family_scores.append((score, family_id, hits))

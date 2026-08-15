@@ -49,6 +49,7 @@ _SECURITY_TOKENS = (
 
 _SKIP_PREFIXES = (
     "schedule of",
+    "condensed schedule",
     "confidential",
     "as of ",
     "shares ",
@@ -60,7 +61,72 @@ _SKIP_PREFIXES = (
     "subtotal ",
     "total ",
     "page ",
+    "years ended",
+    "investments in affiliated",
+    "notes to financial",
 )
+
+
+def _is_reporting_entity_header(name: str) -> bool:
+    """Reject cover/notes fund titles mistaken for portfolio companies."""
+    low = (name or "").lower()
+    if not low:
+        return False
+    if "rivers fund" in low:
+        return True
+    # All-caps fund legal names on headers/notes pages (not portfolio rows).
+    if name.isupper() and "fund" in low and any(tok in low for tok in ("llc", "l.p", "lp", "ltd")):
+        return True
+    return False
+
+
+def _is_narrative_fragment(name: str) -> bool:
+    """Reject notes/narrative snippets that are not portfolio company rows."""
+    raw = (name or "").strip()
+    low = raw.lower()
+    if not low:
+        return True
+    if any(
+        tok in low
+        for tok in (
+            "guarantor",
+            "third-party",
+            "was $",
+            "investment in spvs",
+            "years ended",
+            "rivers fund",
+            "limited partnership",
+            "financial statements",
+            "notes to",
+            "fair values of the",
+            "in accordance with",
+            "instead, such",
+            "in certain cases",
+            "recourse guarantor",
+            "warehouse loan",
+            "joint and several",
+            "wholly-owned spv",
+            "wholly owned spv",
+            "condensed schedules of invest",
+            "fair value presented",
+            "cost and fair value presented",
+        )
+    ):
+        return True
+    # Sentence-like fragments usually start lowercase or lack entity suffixes.
+    if raw[:1].islower():
+        return True
+    # Require a company-like suffix / bucket label when the text has multiple words.
+    if " " in low and not any(
+        tok in low for tok in ("llc", "inc.", "inc", "l.p", "ltd", "other investments")
+    ):
+        # Avoid matching the substring "lp" inside unrelated words; check token boundaries.
+        if not re.search(r"\bl\.?p\.?\b", low):
+            return True
+    # Extremely short residue tokens from watermarked notes pages.
+    if len(raw) <= 2:
+        return True
+    return False
 
 
 def parse_inferred_schedule_companies(
@@ -98,7 +164,9 @@ def parse_inferred_schedule_companies(
 
     def flush(*, cost: str | None = None, fv: str | None = None, page: int | None = None) -> None:
         nonlocal active, active_page, lot_amounts
-        if not active:
+        if not active or _is_reporting_entity_header(active):
+            active = None
+            active_page = None
             lot_amounts = []
             return
         if cost is None or fv is None:
@@ -125,7 +193,10 @@ def parse_inferred_schedule_companies(
         for page_num in inv_pages:
             if page_num < 1 or page_num > len(doc.pages):
                 continue
-            for line in (doc.pages[page_num - 1].extract_text() or "").splitlines():
+            from pdf_validation.watermark import extract_clean_page_text
+
+            page_text, _, _ = extract_clean_page_text(doc.pages[page_num - 1])
+            for line in (page_text or "").splitlines():
                 text = line.strip()
                 if not text:
                     continue
@@ -134,8 +205,20 @@ def parse_inferred_schedule_companies(
                     if low.startswith("total ") or low.startswith("subtotal "):
                         if active and lot_amounts:
                             flush(page=page_num)
+                        # Comparative schedules print prior-year blocks after the current
+                        # "Total investments"; stop so we do not duplicate entities.
+                        if low.startswith("total investment"):
+                            break
                     continue
                 if re.fullmatch(r"\d+", text):
+                    continue
+                # Date / section headers are not companies.
+                if re.match(
+                    r"^(january|february|march|april|may|june|july|august|september|october|november|december)\b",
+                    low,
+                ):
+                    continue
+                if re.fullmatch(r"(members['’] equity|assets|liabilities)", low):
                     continue
 
                 amounts = _AMOUNT.findall(text)
@@ -149,11 +232,39 @@ def parse_inferred_schedule_companies(
                     if idx >= 0:
                         name_part = name_part[:idx].rstrip()
                 name_part = name_part.strip(" :-$")
+                # Strip trailing instrument/security descriptors for one-line company rows.
+                name_part = re.split(
+                    r"\s+(?:Equity Securities|Partnership Interest|Various)\b",
+                    name_part,
+                    maxsplit=1,
+                )[0].strip()
+                name_part = re.sub(r"\s*\([a-z]\)\s*$", "", name_part, flags=re.I).strip()
+                # Normalize common condensed "Other Investments (...)" bucket labels.
+                if name_part.lower().startswith("other investments"):
+                    name_part = "Other Investments"
                 if not name_part and money_vals:
                     if not active:
                         continue
                     cost_v, fv_v = _cost_fv_from_money(money_vals)
                     flush(cost=cost_v, fv=fv_v, page=page_num)
+                    continue
+
+                # Prefer one-line company + Cost + Fair Value rows before multi-line lot mode.
+                if amounts and name_part and len(money_vals) >= 2:
+                    # Reject footnote / narrative fragments mistaken for holdings.
+                    if _is_narrative_fragment(name_part) or _is_reporting_entity_header(name_part):
+                        continue
+                    if name_part.isupper() and len(name_part) > 20:
+                        continue
+                    if active and lot_amounts:
+                        flush(page=page_num)
+                    elif active:
+                        active = None
+                        lot_amounts = []
+                    cost_v, fv_v = _cost_fv_from_money(money_vals)
+                    row = _company_row(name_part, page_num, cost_v, fv_v, None, None, cost_v, fv_v)
+                    row["subtotal_event"] = "inferred_schedule_text"
+                    companies.append(row)
                     continue
 
                 if (
@@ -163,6 +274,8 @@ def parse_inferred_schedule_companies(
                     and not any(tok in low for tok in _SECURITY_TOKENS)
                     and "total" not in low
                 ):
+                    if _is_reporting_entity_header(text) or _is_narrative_fragment(text):
+                        continue
                     if active and lot_amounts:
                         flush(page=page_num)
                     elif active:
@@ -173,10 +286,17 @@ def parse_inferred_schedule_companies(
                     continue
 
                 if active and money_vals:
+                    if _is_reporting_entity_header(active) or _is_narrative_fragment(active):
+                        active = None
+                        active_page = None
+                        lot_amounts = []
+                        continue
                     lot_amounts.append(money_vals[-1])
                     continue
 
                 if amounts and name_part and not company_row_headers:
+                    if _is_reporting_entity_header(name_part) or _is_narrative_fragment(name_part):
+                        continue
                     if any(tok in name_part.lower() for tok in _SECURITY_TOKENS):
                         continue
                     cost_v, fv_v = _cost_fv_from_money(money_vals)

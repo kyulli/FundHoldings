@@ -11,6 +11,16 @@
       "mapping_config": "configs/syn_ventures_fund_ii_q3_2025_vendor_mapping.json",
       "template_family": "vc_lot_schedule",
       "extraction_mode": "position_level"
+    },
+    "A6fcde0": {
+      "mapping_config": "configs/A6fcde0_ilpa_fee_reporting_vendor_mapping.json",
+      "template_family": null,
+      "extraction_mode": "fund_aggregate_only"
+    },
+    "A6fcde0_(mgr_A6f625f)": {
+      "mapping_config": "configs/A6fcde0_ilpa_fee_reporting_vendor_mapping.json",
+      "template_family": null,
+      "extraction_mode": "fund_aggregate_only"
     }
   },
   "default_native_mapping_template": "configs/syn_ventures_fund_ii_q3_2025_vendor_mapping.json"

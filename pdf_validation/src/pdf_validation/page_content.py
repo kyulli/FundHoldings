@@ -53,11 +53,12 @@ class PageContent:
 
 
 def _native_page_stats(pdf_path: Path, max_pages: int = 25) -> list[dict[str, Any]]:
+    from pdf_validation.watermark import extract_clean_page_text
+
     stats: list[dict[str, Any]] = []
     with pdfplumber.open(str(pdf_path)) as doc:
         for idx, page in enumerate(doc.pages[:max_pages]):
-            text = page.extract_text() or ""
-            words = page.extract_words() or []
+            text, words, wm_report = extract_clean_page_text(page)
             stats.append(
                 {
                     "page": idx + 1,
@@ -65,6 +66,7 @@ def _native_page_stats(pdf_path: Path, max_pages: int = 25) -> list[dict[str, An
                     "word_count": len(words),
                     "text": text,
                     "words": words,
+                    "watermark": wm_report.to_dict(),
                 }
             )
     return stats

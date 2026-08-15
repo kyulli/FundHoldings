@@ -164,20 +164,36 @@ def evaluate_gates(
             }
         )
     elif extraction_mode == "position_level_inferred":
-        eq_status = eq.get("status")
-        gates.append(
-            {
-                "gate": "extraction_quality",
-                "status": "FAIL" if eq_status in {None, "FAIL", "REVIEW_REQUIRED", "BLOCKED"} else "PASS",
-                "extraction_mode": extraction_mode,
-                "selected_parser": eq.get("selected_parser"),
-                "reason": (
-                    eq.get("reason")
-                    or "Inferred schema extraction requires approved mapping before amount comparison."
-                ),
-                "blocks_amount_comparison": True,
-            }
-        )
+        if mapping.get("allow_inferred_compare"):
+            eq_pass = eq.get("status") in {"PASS", "REVIEW_REQUIRED", None}
+            gates.append(
+                {
+                    "gate": "extraction_quality",
+                    "status": "PASS" if eq_pass else "FAIL",
+                    "extraction_mode": extraction_mode,
+                    "selected_parser": eq.get("selected_parser"),
+                    "reason": (
+                        eq.get("reason")
+                        or "Inferred schema extraction with approved allow_inferred_compare mapping."
+                    ),
+                    "blocks_amount_comparison": True,
+                }
+            )
+        else:
+            eq_status = eq.get("status")
+            gates.append(
+                {
+                    "gate": "extraction_quality",
+                    "status": "FAIL" if eq_status in {None, "FAIL", "REVIEW_REQUIRED", "BLOCKED"} else "PASS",
+                    "extraction_mode": extraction_mode,
+                    "selected_parser": eq.get("selected_parser"),
+                    "reason": (
+                        eq.get("reason")
+                        or "Inferred schema extraction requires approved mapping before amount comparison."
+                    ),
+                    "blocks_amount_comparison": True,
+                }
+            )
     elif extraction_mode == "fund_aggregate_only":
         agg_ok = bool(fund_aggregate and fund_aggregate.get("parse_status") == "ok")
         gates.append(
@@ -247,6 +263,30 @@ def evaluate_gates(
                 "reason": f"Extraction mode {extraction_mode} is not company-comparable.",
             }
         )
+    elif extraction_mode == "position_level_inferred" and mapping.get("allow_inferred_compare"):
+        gates.append(
+            {
+                "gate": "schedule_grain",
+                "status": "PASS",
+                "pdf_extraction_mode": extraction_mode,
+                "pdf_comparison_grain": pdf_grain,
+                "vendor_comparison_grain": grain_cfg.get("vendor_comparison_grain"),
+                "blocks_company_amount_comparison": False,
+                "blocks_amount_comparison": False,
+                "reason": "Inferred holdings schedule with approved compare mapping.",
+            }
+        )
+    elif extraction_mode == "position_level_inferred":
+        gates.append(
+            {
+                "gate": "schedule_grain",
+                "status": "FAIL",
+                "pdf_extraction_mode": extraction_mode,
+                "pdf_comparison_grain": pdf_grain,
+                "blocks_amount_comparison": True,
+                "reason": "Inferred schema extraction is discover-only until allow_inferred_compare mapping is approved.",
+            }
+        )
     elif extraction_mode == "scanned_financial_statements" or pdf_grain == "statement_and_portfolio":
         gates.append(
             {
@@ -283,11 +323,16 @@ def evaluate_gates(
             "gate": "metric_availability",
             "status": "PASS",
             "has_realized_schedule": has_realized,
-            "company_metrics_available": extraction_mode in {"position_level", "scanned_financial_statements"},
-            "fund_metrics_available": extraction_mode in {"position_level", "fund_aggregate_only", "scanned_financial_statements"},
+            "company_metrics_available": extraction_mode
+            in {"position_level", "scanned_financial_statements"}
+            or (extraction_mode == "position_level_inferred" and bool(mapping.get("allow_inferred_compare"))),
+            "fund_metrics_available": extraction_mode
+            in {"position_level", "fund_aggregate_only", "scanned_financial_statements"}
+            or (extraction_mode == "position_level_inferred" and bool(mapping.get("allow_inferred_compare"))),
             "reason": (
                 "Company metrics available."
                 if extraction_mode == "position_level"
+                or (extraction_mode == "position_level_inferred" and mapping.get("allow_inferred_compare"))
                 else "Statement-line and portfolio metrics available."
                 if extraction_mode == "scanned_financial_statements"
                 else "Only fund aggregate metrics available."
@@ -427,6 +472,8 @@ def evaluate_gates(
     if extraction_mode == "fund_aggregate_only":
         grain_pass = bool(fund_pass and date_pass)
     if extraction_mode == "scanned_financial_statements" or pdf_grain == "statement_and_portfolio":
+        grain_pass = bool(fund_pass and date_pass and confirmed_entity_mappings > 0)
+    if extraction_mode == "position_level_inferred" and mapping.get("allow_inferred_compare"):
         grain_pass = bool(fund_pass and date_pass and confirmed_entity_mappings > 0)
     gates.append(
         {
@@ -964,6 +1011,172 @@ def run_statement_portfolio_matrix(
     return comparisons, alarms, summary
 
 
+def run_fund_aggregate_comparisons(
+    *,
+    fund_aggregate: dict[str, Any],
+    vendor_df: pd.DataFrame,
+    mapping: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Compare mapping-declared fund aggregate fields against vendor column sums.
+
+    Only runs when mapping defines aggregate_amount_fields. Empty target slices or
+    non-numeric vendor values fail explicitly (never sum to zero silently).
+    """
+    fields = mapping.get("aggregate_amount_fields") or []
+    if not fields:
+        return []
+
+    date_cfg = mapping["comparability"]["as_of_date"]
+    pdf_date = date_cfg.get("pdf_normalized_expected")
+    if vendor_df.empty:
+        return [
+            {
+                "status": "mismatch",
+                "logical_field": field.get("logical_field"),
+                "reason": "No vendor rows for fund identity.",
+                "entity_mapping_status": "fund_aggregate_only",
+                "mapping_type": field.get("mapping_type") or "exact",
+            }
+            for field in fields
+        ]
+
+    if "_as_of_iso" not in vendor_df.columns:
+        formats = date_cfg.get("vendor_date_formats") or ["%d-%b-%y", "%d-%b-%Y", "%Y-%m-%d"]
+        vendor_df = vendor_df.copy()
+        vendor_df["_as_of_iso"] = vendor_df[date_cfg["vendor_field"]].map(
+            lambda v: _parse_vendor_date(v, formats)
+        )
+
+    slice_df = vendor_df[vendor_df["_as_of_iso"] == pdf_date].copy()
+    if slice_df.empty:
+        return [
+            {
+                "status": "mismatch",
+                "logical_field": field.get("logical_field"),
+                "pdf_value": fund_aggregate.get(field.get("pdf_field") or field.get("logical_field")),
+                "csv_value": None,
+                "reason": f"No vendor rows for as-of date {pdf_date}.",
+                "entity_mapping_status": "fund_aggregate_only",
+                "mapping_type": field.get("mapping_type") or "exact",
+            }
+            for field in fields
+        ]
+
+    results: list[dict[str, Any]] = []
+    for field in fields:
+        logical = field.get("logical_field")
+        pdf_key = field.get("pdf_field") or logical
+        vendor_field = field.get("vendor_field")
+        tolerance = Decimal(str(field.get("tolerance_absolute", "1")))
+        pdf_val = _to_decimal(fund_aggregate.get(pdf_key))
+
+        if vendor_field not in slice_df.columns:
+            results.append(
+                {
+                    "logical_field": logical,
+                    "pdf_field": pdf_key,
+                    "vendor_field": vendor_field,
+                    "pdf_value": None if pdf_val is None else format(pdf_val, "f"),
+                    "csv_value": None,
+                    "status": "mismatch",
+                    "reason": f"Vendor column missing: {vendor_field}",
+                    "entity_mapping_status": "fund_aggregate_only",
+                    "mapping_type": field.get("mapping_type") or "exact",
+                    "aggregation": field.get("aggregation") or "sum",
+                    "notes": field.get("notes"),
+                }
+            )
+            continue
+
+        series = slice_df[vendor_field]
+        raw_values = series.tolist()
+        parsed: list[Decimal] = []
+        invalid = 0
+        blank = 0
+        for raw in raw_values:
+            if raw is None or (isinstance(raw, float) and pd.isna(raw)) or str(raw).strip() == "":
+                blank += 1
+                continue
+            value = _to_decimal(raw)
+            if value is None:
+                invalid += 1
+            else:
+                parsed.append(value)
+
+        if invalid:
+            results.append(
+                {
+                    "logical_field": logical,
+                    "pdf_field": pdf_key,
+                    "vendor_field": vendor_field,
+                    "pdf_value": None if pdf_val is None else format(pdf_val, "f"),
+                    "csv_value": None,
+                    "status": "mismatch",
+                    "reason": f"Non-numeric vendor values in {vendor_field}: {invalid}",
+                    "entity_mapping_status": "fund_aggregate_only",
+                    "mapping_type": field.get("mapping_type") or "exact",
+                    "aggregation": field.get("aggregation") or "sum",
+                    "vendor_row_count": int(len(slice_df)),
+                    "vendor_blank_count": blank,
+                    "notes": field.get("notes"),
+                }
+            )
+            continue
+
+        if not parsed:
+            results.append(
+                {
+                    "logical_field": logical,
+                    "pdf_field": pdf_key,
+                    "vendor_field": vendor_field,
+                    "pdf_value": None if pdf_val is None else format(pdf_val, "f"),
+                    "csv_value": None,
+                    "status": "mismatch",
+                    "reason": f"Vendor column {vendor_field} has no numeric values on as-of date; refusing empty sum.",
+                    "entity_mapping_status": "fund_aggregate_only",
+                    "mapping_type": field.get("mapping_type") or "exact",
+                    "aggregation": field.get("aggregation") or "sum",
+                    "vendor_row_count": int(len(slice_df)),
+                    "vendor_blank_count": blank,
+                    "notes": field.get("notes"),
+                }
+            )
+            continue
+
+        csv_sum = sum(parsed, Decimal("0"))
+        if pdf_val is None:
+            status = "mismatch"
+            difference = None
+            reason = f"PDF aggregate field missing: {pdf_key}"
+        else:
+            difference = pdf_val - csv_sum
+            status = "match" if abs(difference) <= tolerance else "mismatch"
+            reason = None if status == "match" else "Fund aggregate amount outside tolerance."
+
+        results.append(
+            {
+                "logical_field": logical,
+                "pdf_field": pdf_key,
+                "vendor_field": vendor_field,
+                "pdf_value": None if pdf_val is None else format(pdf_val, "f"),
+                "csv_value": format(csv_sum, "f"),
+                "difference": None if difference is None else format(difference, "f"),
+                "tolerance": format(tolerance, "f"),
+                "status": status,
+                "reason": reason,
+                "entity_mapping_status": "fund_aggregate_only",
+                "mapping_type": field.get("mapping_type") or "exact",
+                "aggregation": field.get("aggregation") or "sum",
+                "vendor_row_count": int(len(slice_df)),
+                "vendor_numeric_count": len(parsed),
+                "vendor_blank_count": blank,
+                "include_non_investment_rows": bool(field.get("include_non_investment_rows", True)),
+                "notes": field.get("notes"),
+            }
+        )
+    return results
+
+
 def compare_with_vendor(
     *,
     extraction_dir: Path,
@@ -988,6 +1201,42 @@ def compare_with_vendor(
     realized_lots = _read_jsonl(extraction_dir / "realized_lots.jsonl")
     run_manifest_rows = _read_jsonl(extraction_dir / "run_manifest.jsonl")
     extraction_manifest = run_manifest_rows[0] if run_manifest_rows else {}
+
+    soa_path = extraction_dir / "statement_of_assets_lines.json"
+    soa_rollup_meta: dict[str, Any] = {}
+    if soa_path.exists():
+        from pdf_validation.statement_parser import apply_non_investment_rollups
+
+        soa_lines = json.loads(soa_path.read_text(encoding="utf-8"))
+        # Prefer explicit category rollups; fall back to DEFAULT map when key absent.
+        rolled = apply_non_investment_rollups(
+            soa_lines,
+            mapping.get("non_investment_rollups") or None,
+            aliases=mapping.get("statement_label_aliases") or None,
+            category_map=mapping.get("non_investment_category_map") or None,
+        )
+        soa_rollup_meta = {
+            "missing_entities": rolled.get("missing_entities") or [],
+            "unknown_lines": rolled.get("unknown_lines") or [],
+            "reconciliation": rolled.get("reconciliation") or {},
+        }
+        (extraction_dir / "soa_non_investment_rollup.json").write_text(
+            json.dumps(soa_rollup_meta, indent=2),
+            encoding="utf-8",
+        )
+        # Fail-closed: missing Non-Investment sources never become synthetic zeros here.
+        existing = {c.get("company_name") for c in company_summary}
+        for row in rolled.get("companies") or []:
+            if row.get("company_name") not in existing:
+                company_summary.append(row)
+        # Block auto full-match when reconciliation fails or unknowns/missing present.
+        recon = rolled.get("reconciliation") or {}
+        if recon.get("blocks_amount_comparison") or rolled.get("missing_entities") or rolled.get("unknown_lines"):
+            # Inject a gate-like marker consumed below via extraction_quality / alarms.
+            extraction_manifest = dict(extraction_manifest)
+            extraction_manifest["soa_reconciliation"] = recon
+            extraction_manifest["soa_missing_entities"] = rolled.get("missing_entities") or []
+            extraction_manifest["soa_unknown_lines"] = rolled.get("unknown_lines") or []
 
     route = {}
     route_path = extraction_dir / "route.json"
@@ -1024,7 +1273,7 @@ def compare_with_vendor(
     confirmed_entities = [
         e
         for e in all_confirmed
-        if e.get("entity_grain", "company") in {"company", "security", None}
+        if e.get("entity_grain", "company") in {"company", "security", "statement_line", None}
         or (statement_mode and e.get("pdf_company_name"))
     ]
     confirmed_entity_mappings_count = len(all_confirmed) if statement_mode else len(confirmed_entities)
@@ -1122,28 +1371,35 @@ def compare_with_vendor(
     elif comparability_status == "aggregate_only_comparable":
         amount_comparisons = []
         if fund_aggregate and fund_aggregate.get("parse_status") == "ok":
-            amount_comparisons.append(
-                {
-                    "logical_field": "fund_total_cost",
-                    "pdf_value": fund_aggregate.get("fund_total_cost"),
-                    "csv_value": None,
-                    "status": "informational",
-                    "mapping_type": "exact",
-                    "notes": "Fund aggregate Cost from Statement; company-level compare blocked by schedule_grain.",
-                    "entity_mapping_status": "fund_aggregate_only",
-                }
-            )
-            amount_comparisons.append(
-                {
-                    "logical_field": "fund_total_fair_value",
-                    "pdf_value": fund_aggregate.get("fund_total_fair_value"),
-                    "csv_value": None,
-                    "status": "informational",
-                    "mapping_type": "exact",
-                    "notes": "Fund aggregate Fair Value from Statement; company-level compare blocked by schedule_grain.",
-                    "entity_mapping_status": "fund_aggregate_only",
-                }
-            )
+            if mapping.get("aggregate_amount_fields"):
+                amount_comparisons = run_fund_aggregate_comparisons(
+                    fund_aggregate=fund_aggregate,
+                    vendor_df=vendor_df,
+                    mapping=mapping,
+                )
+            else:
+                amount_comparisons.append(
+                    {
+                        "logical_field": "fund_total_cost",
+                        "pdf_value": fund_aggregate.get("fund_total_cost"),
+                        "csv_value": None,
+                        "status": "informational",
+                        "mapping_type": "exact",
+                        "notes": "Fund aggregate Cost from Statement; company-level compare blocked by schedule_grain.",
+                        "entity_mapping_status": "fund_aggregate_only",
+                    }
+                )
+                amount_comparisons.append(
+                    {
+                        "logical_field": "fund_total_fair_value",
+                        "pdf_value": fund_aggregate.get("fund_total_fair_value"),
+                        "csv_value": None,
+                        "status": "informational",
+                        "mapping_type": "exact",
+                        "notes": "Fund aggregate Fair Value from Statement; company-level compare blocked by schedule_grain.",
+                        "entity_mapping_status": "fund_aggregate_only",
+                    }
+                )
     else:
         amount_comparisons = [
             {
@@ -1165,13 +1421,66 @@ def compare_with_vendor(
     match_count = sum(1 for a in amount_comparisons if a.get("status") == "match")
     mismatch_count = sum(1 for a in amount_comparisons if a.get("status") == "mismatch")
     overall_status = None
+    soa_blocks = bool(
+        (soa_rollup_meta.get("reconciliation") or {}).get("blocks_amount_comparison")
+        or soa_rollup_meta.get("missing_entities")
+        or soa_rollup_meta.get("unknown_lines")
+    )
+    if soa_blocks:
+        for miss in soa_rollup_meta.get("missing_entities") or []:
+            alarms.append(
+                {
+                    "alarm_id": "soa_pdf_missing_category",
+                    "severity": "high",
+                    "status": "pdf_missing",
+                    "vendor_source_asset": miss.get("vendor_source_asset"),
+                    "category": miss.get("category"),
+                    "reason": miss.get("reason") or "pdf_missing",
+                }
+            )
+        for unk in soa_rollup_meta.get("unknown_lines") or []:
+            alarms.append(
+                {
+                    "alarm_id": "soa_unknown_classification",
+                    "severity": "high",
+                    "status": "REVIEW_REQUIRED",
+                    "label_normalized": unk.get("label_normalized"),
+                    "raw_line": unk.get("raw_line"),
+                }
+            )
+        recon = soa_rollup_meta.get("reconciliation") or {}
+        if recon.get("blocks_amount_comparison"):
+            alarms.append(
+                {
+                    "alarm_id": "soa_reconciliation_failed",
+                    "severity": "critical",
+                    "status": recon.get("status") or "FAIL",
+                    "checks": recon.get("checks") or [],
+                    "buckets": recon.get("buckets") or {},
+                    "reported_totals": recon.get("reported_totals") or {},
+                }
+            )
     if statement_mode and comparability_status == "comparable":
         blocking = [a for a in alarms if a.get("severity") in {"high", "critical"}]
-        if blocking or mismatch_count:
+        if blocking or mismatch_count or soa_blocks:
             overall_status = "REVIEW_REQUIRED"
         elif matrix_summary.get("populated_vendor_fields", 0) > 0 and matrix_summary.get(
             "matched_vendor_fields"
         ) == matrix_summary.get("populated_vendor_fields"):
+            overall_status = "PASS"
+        else:
+            overall_status = "REVIEW_REQUIRED"
+    elif comparability_status == "comparable":
+        if mismatch_count or soa_blocks:
+            overall_status = "REVIEW_REQUIRED"
+        elif match_count:
+            overall_status = "PASS"
+        else:
+            overall_status = "REVIEW_REQUIRED"
+    elif comparability_status == "aggregate_only_comparable" and mapping.get("aggregate_amount_fields"):
+        if mismatch_count:
+            overall_status = "REVIEW_REQUIRED"
+        elif match_count:
             overall_status = "PASS"
         else:
             overall_status = "REVIEW_REQUIRED"
@@ -1201,7 +1510,12 @@ def compare_with_vendor(
             "confirmed_entity_mappings": confirmed_entity_mappings_count,
             "gates_failed": [g["gate"] for g in gates if g["status"] != "PASS"],
             "gates_passed": [g["gate"] for g in gates if g["status"] == "PASS"],
-            "amount_comparison_executed": comparability_status == "comparable",
+            "amount_comparison_executed": comparability_status
+            in {"comparable", "aggregate_only_comparable"}
+            and (
+                comparability_status == "comparable"
+                or bool(mapping.get("aggregate_amount_fields"))
+            ),
             "amount_match_count": match_count,
             "amount_mismatch_count": mismatch_count,
             "pdf_company_count": len(company_summary),

@@ -72,6 +72,12 @@ def _run_one(pdf: Path, fund_id: str) -> dict[str, Any]:
         auto_template=True,
     )
     mode = (payload.get("route") or route).get("extraction_mode")
+    # Prefer as-of recovered during extraction (e.g. ILPA period labels).
+    payload_as_of = (payload.get("route") or {}).get("as_of_date") or (
+        (payload.get("fund_aggregate") or {}).get("as_of_date")
+    )
+    if payload_as_of and (not as_of or as_of == "unknown"):
+        as_of = payload_as_of
     result: dict[str, Any] = {
         "fund_id": fund_id,
         "pdf": str(pdf),
@@ -84,16 +90,65 @@ def _run_one(pdf: Path, fund_id: str) -> dict[str, Any]:
         "status": "ran",
     }
 
-    if mode in {"blocked_narrative", "manual_review", "position_level_inferred"}:
-        result["comparability_status"] = "not_comparable" if mode != "position_level_inferred" else "needs_review"
+    if mode in {"blocked_narrative", "manual_review"}:
+        result["comparability_status"] = "not_comparable"
         result["match"] = 0
         result["mismatch"] = 0
         result["blocked_reason"] = mode
         result["onboarding_status"] = (payload.get("onboarding_summary") or {}).get("onboarding_status")
         result["compare_allowed"] = False
-        if mode == "position_level_inferred":
+        return result
+
+    if mode == "position_level_inferred":
+        mapping, entry = _approved_mapping_for_fund(fund_id)
+        if mapping is None or not mapping.get("allow_inferred_compare"):
+            result["comparability_status"] = "needs_review"
+            result["match"] = 0
+            result["mismatch"] = 0
+            result["blocked_reason"] = mode
+            result["onboarding_status"] = (payload.get("onboarding_summary") or {}).get("onboarding_status")
+            result["compare_allowed"] = False
             result["inferred_schema"] = (payload.get("route") or {}).get("inferred_schema")
             result["status"] = "discover_only"
+            return result
+        mapping = dict(mapping)
+        mapping["extraction_mode"] = "position_level_inferred"
+        if as_of and as_of != "unknown":
+            mapping["comparability"]["as_of_date"]["pdf_normalized_expected"] = as_of
+            mapping["comparability"]["as_of_date"]["vendor_raw_expected"] = VENDOR_DATE_MAP.get(as_of)
+        map_path = CONFIG_DIR / f"{stem}_vendor_mapping.json"
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        map_path.write_text(json.dumps(mapping, indent=2), encoding="utf-8")
+        report = compare_with_vendor(
+            extraction_dir=out_dir / "extract",
+            vendor_csv=CSV_PATH,
+            mapping_config=map_path,
+            output_dir=out_dir / "compare",
+            repo_root=ROOT,
+        )
+        amounts = report.get("amount_comparisons") or []
+        result.update(
+            {
+                "comparability_status": report.get("comparability_status"),
+                "overall_status": report.get("overall_status"),
+                "match": sum(1 for a in amounts if a.get("status") == "match"),
+                "mismatch": sum(1 for a in amounts if a.get("status") == "mismatch"),
+                "entities_mapped": len(mapping.get("entity_mappings") or []),
+                "compare_allowed": True,
+                "mapping_registry_entry": entry or None,
+                "mismatches": [
+                    {
+                        "company": a.get("vendor_source_asset") or a.get("pdf_company_name"),
+                        "field": a.get("logical_field"),
+                        "pdf": a.get("pdf_value"),
+                        "csv": a.get("csv_value"),
+                        "diff": a.get("difference"),
+                    }
+                    for a in amounts
+                    if a.get("status") == "mismatch"
+                ][:50],
+            }
+        )
         return result
 
     # OCR / statement path: only compare when an approved fund mapping exists in registry.
@@ -134,6 +189,56 @@ def _run_one(pdf: Path, fund_id: str) -> dict[str, Any]:
         result["mismatch"] = 0
         result["blocked_reason"] = "ocr_without_approved_mapping"
         result["compare_allowed"] = False
+        return result
+
+    # Fund-aggregate ILPA / statement totals: compare only with approved aggregate mapping.
+    if mode == "fund_aggregate_only":
+        mapping, entry = _approved_mapping_for_fund(fund_id)
+        if mapping is None or not (mapping.get("aggregate_amount_fields") or []):
+            result["comparability_status"] = "needs_review"
+            result["match"] = 0
+            result["mismatch"] = 0
+            result["blocked_reason"] = "aggregate_without_approved_mapping"
+            result["compare_allowed"] = False
+            result["fund_aggregate"] = payload.get("fund_aggregate")
+            return result
+        mapping = dict(mapping)
+        mapping["extraction_mode"] = entry.get("extraction_mode") or mapping.get("extraction_mode") or "fund_aggregate_only"
+        if as_of and as_of != "unknown":
+            mapping["comparability"]["as_of_date"]["pdf_normalized_expected"] = as_of
+            mapping["comparability"]["as_of_date"]["vendor_raw_expected"] = VENDOR_DATE_MAP.get(as_of)
+        map_path = CONFIG_DIR / f"{stem}_vendor_mapping.json"
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        map_path.write_text(json.dumps(mapping, indent=2), encoding="utf-8")
+        report = compare_with_vendor(
+            extraction_dir=out_dir / "extract",
+            vendor_csv=CSV_PATH,
+            mapping_config=map_path,
+            output_dir=out_dir / "compare",
+            repo_root=ROOT,
+        )
+        amounts = report.get("amount_comparisons") or []
+        result.update(
+            {
+                "comparability_status": report.get("comparability_status"),
+                "overall_status": report.get("overall_status"),
+                "match": sum(1 for a in amounts if a.get("status") == "match"),
+                "mismatch": sum(1 for a in amounts if a.get("status") == "mismatch"),
+                "fund_aggregate": payload.get("fund_aggregate"),
+                "mapping_registry_entry": entry or None,
+                "compare_allowed": True,
+                "mismatches": [
+                    {
+                        "field": a.get("logical_field"),
+                        "pdf": a.get("pdf_value"),
+                        "csv": a.get("csv_value"),
+                        "diff": a.get("difference"),
+                    }
+                    for a in amounts
+                    if a.get("status") == "mismatch"
+                ],
+            }
+        )
         return result
 
     mapping = _base_mapping_for_fund(fund_id)

@@ -1,0 +1,217 @@
+{
+  "mapping_id": "A6fcde0_american_rivers_holdings_and_ilpa",
+  "mapping_version": "3.0.0",
+  "pdf_template_id": "generic_holdings_schedule",
+  "extraction_mode": "position_level_inferred",
+  "allow_inferred_compare": true,
+  "has_realized_schedule": false,
+  "comparability": {
+    "fund_identity": {
+      "pdf_fund_name_field": "fund_name",
+      "vendor_fund_id_field": "Fund Allocator ID",
+      "vendor_fund_id": "A6fcde0",
+      "vendor_manager_id": "A6f625f",
+      "require_explicit_fund_id": true,
+      "allow_fuzzy_name_match_to_confirm": false,
+      "identity_confirmation_note": "Fund Allocator ID A6fcde0 / manager A6f625f for American Rivers Fund."
+    },
+    "as_of_date": {
+      "pdf_field": "as_of_date",
+      "vendor_field": "As At Date",
+      "pdf_normalized_expected": null,
+      "vendor_raw_expected": null,
+      "vendor_date_formats": ["%d-%b-%y", "%d-%b-%Y", "%Y-%m-%d"],
+      "require_exact_match": true
+    },
+    "currency": {
+      "pdf_field": "currency",
+      "vendor_field": "Reporting Currency",
+      "require_both_disclosed": false,
+      "waiver": {
+        "enabled": true,
+        "assumed_value": "USD",
+        "reason": "PDF shows $ / (USD); vendor Reporting Currency blank for A6fcde0."
+      }
+    },
+    "unit": {
+      "pdf_field": "unit",
+      "vendor_field": "Reporting Currency Unit",
+      "require_both_disclosed": false,
+      "waiver": {
+        "enabled": true,
+        "assumed_value": "ones",
+        "reason": "Amounts align at ones scale for A6fcde0."
+      }
+    },
+    "grain": {
+      "pdf_comparison_grain": "company",
+      "vendor_comparison_grain": "source_asset_row",
+      "pdf_entity_field": "company_name",
+      "vendor_entity_field": "Source Asset",
+      "allow_automatic_entity_confirmation": false,
+      "fuzzy_candidate_generation": true,
+      "include_non_investment_rows": true
+    }
+  },
+  "entity_mappings": [
+    {
+      "pdf_company_name": "AIM Parent Holdings, LLC",
+      "vendor_source_asset": "AIM Parent Holdings, LLC",
+      "confirmation": "explicit_config",
+      "confirmed": true
+    },
+    {
+      "pdf_company_name": "American Tanker Holding Company, LLC",
+      "vendor_source_asset": "American Tanker Holding Company, Inc.",
+      "confirmation": "explicit_config",
+      "confirmed": true,
+      "notes": "PDF uses LLC; vendor uses Inc."
+    },
+    {
+      "pdf_company_name": "MG Transport Holdings, LLC",
+      "vendor_source_asset": "MG Transport Holdings, LLC",
+      "confirmation": "explicit_config",
+      "confirmed": true
+    },
+    {
+      "pdf_company_name": "U.S. Marine Management, LLC",
+      "vendor_source_asset": "U.S. Marine Management LLC",
+      "confirmation": "explicit_config",
+      "confirmed": true
+    },
+    {
+      "pdf_company_name": "ARF CLC Holdings, LLC",
+      "vendor_source_asset": "ARF CLC Holdings, LLC",
+      "confirmation": "explicit_config",
+      "confirmed": true
+    },
+    {
+      "pdf_company_name": "Other Investments",
+      "vendor_source_asset": "Other Investments",
+      "confirmation": "explicit_config",
+      "confirmed": true
+    },
+    {
+      "pdf_company_name": "Non-Investment Assets - Cash",
+      "vendor_source_asset": "Non-Investment Assets - Cash",
+      "confirmation": "explicit_config",
+      "confirmed": true,
+      "entity_grain": "statement_line"
+    },
+    {
+      "pdf_company_name": "Non-Investment Assets - Other Assets",
+      "vendor_source_asset": "Non-Investment Assets - Other Assets",
+      "confirmation": "explicit_config",
+      "confirmed": true,
+      "entity_grain": "statement_line"
+    },
+    {
+      "pdf_company_name": "Non-Investment Liabilities - Other Liabilities",
+      "vendor_source_asset": "Non-Investment Liabilities - Other Liabilities",
+      "confirmation": "explicit_config",
+      "confirmed": true,
+      "entity_grain": "statement_line"
+    },
+    {
+      "pdf_company_name": "Non-Investment Liabilities - Subscription Line of Credit",
+      "vendor_source_asset": "Non-Investment Liabilities - Subscription Line of Credit",
+      "confirmation": "explicit_config",
+      "confirmed": true,
+      "entity_grain": "statement_line"
+    }
+  ],
+  "non_investment_rollups": [
+    {
+      "category": "cash",
+      "vendor_source_asset": "Non-Investment Assets - Cash",
+      "sign": 1
+    },
+    {
+      "category": "other_asset",
+      "vendor_source_asset": "Non-Investment Assets - Other Assets",
+      "sign": 1
+    },
+    {
+      "category": "other_liability",
+      "vendor_source_asset": "Non-Investment Liabilities - Other Liabilities",
+      "sign": -1
+    },
+    {
+      "category": "subscription_line",
+      "vendor_source_asset": "Non-Investment Liabilities - Subscription Line of Credit",
+      "sign": -1
+    }
+  ],
+  "aggregate_amount_fields": [
+    {
+      "logical_field": "fund_total_fair_value",
+      "pdf_field": "fund_total_fair_value",
+      "vendor_field": "Unrealized Value",
+      "aggregation": "sum",
+      "include_non_investment_rows": true,
+      "mapping_type": "exact",
+      "tolerance_absolute": "1",
+      "notes": "ILPA Ending NAV vs vendor Unrealized Value sum."
+    },
+    {
+      "logical_field": "fund_unrealized",
+      "pdf_field": "fund_unrealized",
+      "vendor_field": "Unrealized Gain/Loss",
+      "aggregation": "sum",
+      "include_non_investment_rows": true,
+      "mapping_type": "exact",
+      "tolerance_absolute": "1",
+      "notes": "ILPA since-inception unrealized change vs vendor Unrealized Gain/Loss sum."
+    }
+  ],
+  "amount_fields": [
+    {
+      "logical_field": "current_cost",
+      "pdf_metric": "current_cost",
+      "pdf_source_field": "current_cost_source",
+      "vendor_field": "Current Cost",
+      "mapping_type": "exact",
+      "tolerance_absolute": "1",
+      "notes": "PDF Cost == CSV Current Cost for portfolio companies / Other Investments."
+    },
+    {
+      "logical_field": "unrealized_value",
+      "pdf_metric": "unrealized_value",
+      "pdf_source_field": "unrealized_value_source",
+      "vendor_field": "Unrealized Value",
+      "mapping_type": "exact",
+      "tolerance_absolute": "1",
+      "notes": "PDF Fair Value / SOA rollup == CSV Unrealized Value."
+    }
+  ],
+  "field_dictionary": [
+    {
+      "attribute_class": "identity",
+      "logical_field": "fund_id",
+      "pdf_field": "fund_name",
+      "vendor_field": "Fund Allocator ID",
+      "mapping_type": "exact"
+    },
+    {
+      "attribute_class": "identity",
+      "logical_field": "as_of_date",
+      "pdf_field": "as_of_date",
+      "vendor_field": "As At Date",
+      "mapping_type": "exact"
+    },
+    {
+      "attribute_class": "amount",
+      "logical_field": "current_cost",
+      "pdf_field": "cost",
+      "vendor_field": "Current Cost",
+      "mapping_type": "exact"
+    },
+    {
+      "attribute_class": "amount",
+      "logical_field": "unrealized_value",
+      "pdf_field": "fair_value",
+      "vendor_field": "Unrealized Value",
+      "mapping_type": "exact"
+    }
+  ]
+}

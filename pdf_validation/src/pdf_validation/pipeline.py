@@ -187,6 +187,11 @@ def _finalize_and_export(
             json.dumps(payload["fund_aggregate"], indent=2),
             encoding="utf-8",
         )
+    if payload.get("statement_of_assets_lines") is not None:
+        (output_dir / "statement_of_assets_lines.json").write_text(
+            json.dumps(payload.get("statement_of_assets_lines") or [], indent=2),
+            encoding="utf-8",
+        )
     if route:
         (output_dir / "route.json").write_text(json.dumps(route, indent=2), encoding="utf-8")
         inferred = route.get("inferred_schema")
@@ -422,6 +427,9 @@ def _run_native_extract(
     validation_issues = _validation_issues(parser_decisions, reconciliation, company_summary)
 
     fund_aggregate = parse_fund_aggregate(pdf_path)
+    from pdf_validation.statement_parser import parse_statement_of_assets_lines
+
+    soa_lines = parse_statement_of_assets_lines(pdf_path)
 
     payload = {
         "run_manifest": run_manifest,
@@ -431,6 +439,7 @@ def _run_native_extract(
         "investment_lots": investment_classified["investment_lots"],
         "company_summary": company_summary,
         "statement_entities": [],
+        "statement_of_assets_lines": soa_lines,
         "realized_lots": realized_classified["realized_lots"],
         "reconciliation": reconciliation,
         "validation_issues": validation_issues,
