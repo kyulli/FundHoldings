@@ -56,3 +56,21 @@ CURRENT_OPS_REPORT = (
     / "2426q1_new_report"
     / "2426q1_ops_report.xlsx"
 )
+
+PIPELINE_SUMMARY_METRICS = [
+    "Baseline data as of",
+    "New completeness issues this run",
+    "Resolved completeness issues this run",
+    "Still-open completeness issues",
+    "New Deal Status exceptions this run",
+    "Funds newly below 85% completeness",
+    "Managers newly below 85% completeness",
+    "PDF mismatches found this run",
+]
+
+DIAGNOSIS_OVERVIEW_METRICS = [
+    "Issues Evaluated",
+    "Specific Root Cause Assigned",
+    "Root Cause Unresolved",
+    "Verify Deal Status Against Source",
+]
