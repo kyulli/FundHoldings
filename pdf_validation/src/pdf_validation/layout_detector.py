@@ -29,8 +29,24 @@ def _alias_lookup(registry: dict[str, Any]) -> dict[str, str]:
     return out
 
 
-def detect_header_band(page: pdfplumber.page.Page, alias_map: dict[str, str]) -> dict[str, Any]:
-    words = page.extract_words() or []
+def detect_header_band(
+    page: pdfplumber.page.Page,
+    alias_map: dict[str, str],
+    *,
+    min_hits: int = 3,
+    words: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Detect schedule header band and column midpoints.
+
+    ``min_hits`` is the minimum distinct logical columns required. Known-family
+    layout detection uses 3; schema inference may soften to 2 for compact headers.
+    Prefer cleaned words from ``read_clean_page_text`` when available.
+    """
+    if words is None:
+        from pdf_validation.watermark import read_clean_page_text
+
+        _, words, _ = read_clean_page_text(page)
+    words = words or []
     by_top: dict[float, list[dict[str, Any]]] = defaultdict(list)
     for word in words:
         by_top[round(float(word["top"]), 0)].append(word)
@@ -43,10 +59,10 @@ def detect_header_band(page: pdfplumber.page.Page, alias_map: dict[str, str]) ->
         for alias, logical in alias_map.items():
             if alias in joined or any(alias == t.lower() for t in texts):
                 hits.append(logical)
-        if len(set(hits)) >= 3:
+        if len(set(hits)) >= min_hits:
             best_rows.append((top, row, sorted(set(hits))))
     if not best_rows:
-        return {"found": False}
+        return {"found": False, "min_hits": min_hits}
     best_rows.sort(key=lambda item: (-len(item[2]), item[0]))
     top, row, hits = best_rows[0]
     # Merge adjacent header band within 18pt.
@@ -85,26 +101,36 @@ def detect_header_band(page: pdfplumber.page.Page, alias_map: dict[str, str]) ->
         "mids": {name: mid for name, mid in ordered},
         "separators": seps,
         "hits": hits,
+        "min_hits": min_hits,
     }
 
 
 def detect_layout(pdf_path: str | Any, route: dict[str, Any], registry: dict[str, Any] | None = None) -> dict[str, Any]:
+    from pdf_validation.watermark import read_clean_page_text, watermark_report_summary
+
     registry = registry or load_registry()
     alias_map = _alias_lookup(registry)
     family_id = route.get("template_family")
     family = registry["template_families"].get(family_id or "", {})
+    wm_reports: list[Any] = []
 
     with pdfplumber.open(pdf_path) as doc:
-        cover = (doc.pages[0].extract_text() or "") if doc.pages else ""
+        cover = ""
+        if doc.pages:
+            cover, _, cover_wm = read_clean_page_text(doc.pages[0])
+            wm_reports.append(cover_wm)
         statement_page_idx = 1 if len(doc.pages) > 1 else 0
-        statement_text = doc.pages[statement_page_idx].extract_text() or ""
+        statement_text, _, stmt_wm = read_clean_page_text(doc.pages[statement_page_idx])
+        wm_reports.append(stmt_wm)
 
         inv_pages = list(route.get("schedule_pages") or [])
         if not inv_pages and family.get("schedule_titles"):
             titles = [t.lower() for t in family["schedule_titles"]]
             for i, page in enumerate(doc.pages):
-                text = (page.extract_text() or "").lower()
-                if any(t in text for t in titles):
+                text, _, page_wm = read_clean_page_text(page)
+                wm_reports.append(page_wm)
+                text_l = (text or "").lower()
+                if any(t in text_l for t in titles):
                     inv_pages.append(i + 1)
 
         real_pages = list(route.get("realized_pages") or [])
@@ -116,7 +142,9 @@ def detect_layout(pdf_path: str | Any, route: dict[str, Any], registry: dict[str
         if inv_pages:
             page = doc.pages[inv_pages[0] - 1]
             inv_page_size = [page.width, page.height]
-            header = detect_header_band(page, alias_map)
+            _, header_words, header_wm = read_clean_page_text(page)
+            wm_reports.append(header_wm)
+            header = detect_header_band(page, alias_map, words=header_words)
             seps = header.get("separators") or []
             if len(seps) < 4:
                 # Relative fallbacks by family.
@@ -199,4 +227,5 @@ def detect_layout(pdf_path: str | Any, route: dict[str, Any], registry: dict[str
         "investments_fv": fv,
         "unrealized": unrealized,
         "family_id": family_id,
+        "watermark": watermark_report_summary(wm_reports),
     }

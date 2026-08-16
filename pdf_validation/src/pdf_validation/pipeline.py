@@ -212,10 +212,32 @@ def _finalize_and_export(
             "company_count": len(payload.get("company_summary") or []),
             "statement_entity_count": len(payload.get("statement_entities") or []),
             "selected_parser": payload.get("selected_parser"),
+            "parser_source": payload.get("parser_source") or route.get("parser_source"),
+            "generated_template_id": payload.get("generated_template_id") or route.get("generated_template_id"),
             "extraction_quality": payload.get("extraction_quality"),
             "recommended_adapter": route.get("recommended_adapter"),
             "text_source": route.get("text_source"),
             "review_tasks": [],
+        }
+        # Capability layers: extracted → reconciled → comparable.
+        company_count = int(onboarding["company_count"] or 0)
+        stmt_count = int(onboarding["statement_entity_count"] or 0)
+        extracted = company_count > 0 or stmt_count > 0 or bool(payload.get("fund_aggregate"))
+        recon_rows = payload.get("reconciliation") or []
+        recon_fail = any(
+            isinstance(r, dict) and str(r.get("status") or "").upper() in {"FAIL", "REVIEW_REQUIRED"}
+            for r in recon_rows
+        )
+        eq = payload.get("extraction_quality") or {}
+        eq_status = str(eq.get("status") or "").upper()
+        reconciled = extracted and not recon_fail and eq_status not in {"FAIL", "BLOCKED"}
+        comparable = bool(onboarding["compare_allowed"]) and reconciled and eq_status in {"PASS", "OK", ""}
+        if route.get("extraction_mode") == "position_level_inferred":
+            comparable = False
+        onboarding["status_layers"] = {
+            "extracted": extracted,
+            "reconciled": reconciled,
+            "comparable": comparable,
         }
         if route.get("extraction_mode") == "position_level_inferred":
             onboarding["review_tasks"] = [
@@ -234,8 +256,19 @@ def _finalize_and_export(
                 },
             ]
             onboarding["compare_allowed"] = False
+            onboarding["status_layers"]["comparable"] = False
         (output_dir / "onboarding_summary.json").write_text(json.dumps(onboarding, indent=2), encoding="utf-8")
         payload["onboarding_summary"] = onboarding
+        if payload.get("classification_candidates") is not None:
+            (output_dir / "classification_candidates.json").write_text(
+                json.dumps(payload.get("classification_candidates") or [], indent=2),
+                encoding="utf-8",
+            )
+        if payload.get("llm_audit"):
+            (output_dir / "llm_audit.jsonl").write_text(
+                "\n".join(json.dumps(row) for row in (payload.get("llm_audit") or [])) + ("\n" if payload.get("llm_audit") else ""),
+                encoding="utf-8",
+            )
     if payload.get("scan_detection"):
         (output_dir / "scan_detection.json").write_text(
             json.dumps(payload["scan_detection"], indent=2),
@@ -327,15 +360,65 @@ def _run_native_extract(
     realized_classified = selected["realized_classified"]
     company_summary = selected["company_summary"]
     reconciliation = selected["reconciliation"]
+    parser_source = selected.get("selected_parser") or "table"
+    generated_template_id = None
+
+    # Prefer approved teach-once template (deterministic replay; no LLM at runtime).
+    fund_id_for_template = (
+        (config.get("route") or {}).get("fund_id")
+        or (route or {}).get("fund_id")
+        or (config.get("document") or {}).get("fund_id")
+        or cli_args.get("fund_id")
+    )
+    if fund_id_for_template:
+        try:
+            from template_generator.approval import approved_template_for_fund
+            from template_generator.replay import replay
+
+            configs_root = Path(__file__).resolve().parents[2] / "configs"
+            approved = approved_template_for_fund(str(fund_id_for_template), configs_root)
+            if approved is not None:
+                pages = list(
+                    config.get("pages", {}).get("schedule_of_investments")
+                    or (route or {}).get("schedule_pages")
+                    or approved.schedule_pages
+                    or []
+                )
+                if pages:
+                    replayed = replay(approved, pdf_path, pages=pages)
+                    if replayed.company_summary:
+                        company_summary = replayed.company_summary
+                        parser_source = "approved_generated_template"
+                        generated_template_id = approved.template_id
+                        selected["selected_parser"] = "approved_generated_template"
+                        selected["extraction_quality"] = {
+                            "status": "PASS",
+                            "selected_parser": "approved_generated_template",
+                            "reason": f"Deterministic replay of approved template {approved.template_id}.",
+                            "company_count": len(company_summary),
+                            "generated_template_id": approved.template_id,
+                            "generated_template_version": getattr(approved, "schema_version", None),
+                        }
+                        if route is not None:
+                            route = dict(route)
+                            route["parser_source"] = parser_source
+                            route["generated_template_id"] = generated_template_id
+        except Exception:  # noqa: BLE001 - approved-template path is best-effort
+            pass
 
     # Prefer text companies for families that opt in, or inferred schemas.
+    # Skip when an approved generated template already produced company rows.
     family = config.get("template_family")
     inferred = config.get("inferred_schema") or (route or {}).get("inferred_schema") or {}
-    if config.get("prefer_text_fallback") or family in {
-        "condensed_hedge_schedule",
-        "audited_portfolio_schedule",
-        "generic_holdings_schedule",
-    }:
+    if parser_source != "approved_generated_template" and (
+        config.get("prefer_text_fallback")
+        or family
+        in {
+            "condensed_hedge_schedule",
+            "audited_portfolio_schedule",
+            "generic_holdings_schedule",
+        }
+    ):
         inv_pages = config.get("pages", {}).get("schedule_of_investments") or []
         if family == "condensed_hedge_schedule":
             from pdf_validation.text_fallback import parse_condensed_positions_from_text
@@ -355,8 +438,13 @@ def _run_native_extract(
             )
         else:
             text_companies = parse_company_subtotals_from_text(pdf_path, inv_pages)
-        if text_companies:
+        camelot_has_amounts = any(
+            (c.get("cost") not in (None, "", "0") or c.get("fair_value") not in (None, "", "0"))
+            for c in company_summary
+        )
+        if text_companies and (not company_summary or not camelot_has_amounts or family in {"condensed_hedge_schedule", "generic_holdings_schedule"}):
             company_summary = text_companies
+            parser_source = "text_fallback"
             selected["selected_parser"] = "text_fallback"
             selected["extraction_quality"] = {
                 "status": "REVIEW_REQUIRED" if inferred or family == "generic_holdings_schedule" else "PASS",
@@ -427,9 +515,13 @@ def _run_native_extract(
     validation_issues = _validation_issues(parser_decisions, reconciliation, company_summary)
 
     fund_aggregate = parse_fund_aggregate(pdf_path)
-    from pdf_validation.statement_parser import parse_statement_of_assets_lines
+    from pdf_validation.statement_parser import (
+        attach_statement_classification_candidates,
+        parse_statement_of_assets_lines,
+    )
 
     soa_lines = parse_statement_of_assets_lines(pdf_path)
+    soa_lines, classification_candidates, llm_audit = attach_statement_classification_candidates(soa_lines)
 
     payload = {
         "run_manifest": run_manifest,
@@ -440,6 +532,8 @@ def _run_native_extract(
         "company_summary": company_summary,
         "statement_entities": [],
         "statement_of_assets_lines": soa_lines,
+        "classification_candidates": classification_candidates,
+        "llm_audit": llm_audit,
         "realized_lots": realized_classified["realized_lots"],
         "reconciliation": reconciliation,
         "validation_issues": validation_issues,
@@ -452,6 +546,8 @@ def _run_native_extract(
         "fund_aggregate": fund_aggregate,
         "extraction_quality": selected.get("extraction_quality"),
         "selected_parser": selected.get("selected_parser"),
+        "parser_source": parser_source,
+        "generated_template_id": generated_template_id,
     }
     return _finalize_and_export(payload=payload, output_dir=output_dir, route=route)
 

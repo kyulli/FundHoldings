@@ -285,6 +285,42 @@ def extract_clean_page_text(page: Any) -> tuple[str, list[dict[str, Any]], Water
     return text, words, report
 
 
+def read_clean_page_text(page: Any) -> tuple[str, list[dict[str, Any]], WatermarkReport]:
+    """Canonical page-text reader for all native PDF text consumers.
+
+    Prefer this over ``page.extract_text()`` so routing, layout, SOA, text
+    fallback, and template-generator share one watermark-filtered text layer.
+    """
+    return extract_clean_page_text(page)
+
+
+def read_clean_page_lines(page: Any) -> tuple[list[str], WatermarkReport]:
+    """Return non-empty cleaned text lines plus the watermark report."""
+    text, _, report = read_clean_page_text(page)
+    lines = [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
+    return lines, report
+
+
+def watermark_report_summary(reports: list[WatermarkReport] | list[dict[str, Any]]) -> dict[str, Any]:
+    """Compact multi-page watermark summary for extraction evidence."""
+    pages: list[dict[str, Any]] = []
+    signatures: set[str] = set()
+    removed = 0
+    fail_open = False
+    for item in reports:
+        data = item.to_dict() if isinstance(item, WatermarkReport) else dict(item)
+        pages.append(data)
+        signatures.update(data.get("signatures") or [])
+        removed += int(data.get("removed_char_count") or 0)
+        fail_open = fail_open or bool(data.get("fail_open"))
+    return {
+        "pages": pages,
+        "signatures": sorted(signatures),
+        "removed_char_count": removed,
+        "fail_open": fail_open,
+    }
+
+
 def normalize_statement_label(label: str) -> str:
     """Non-destructive statement-label normalize after watermark char filtering.
 

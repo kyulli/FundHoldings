@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from pdf_validation.batch_runner import run_batch
@@ -55,6 +56,15 @@ def build_parser() -> argparse.ArgumentParser:
         default="config",
         help="Use --template auto to route + build config automatically",
     )
+    extract.add_argument("--fund-id", required=False, type=str, help="When set, build mapping proposal after extract")
+    extract.add_argument("--vendor-csv", required=False, type=Path)
+    extract.add_argument("--as-of", required=False, type=str)
+    extract.add_argument(
+        "--open-review",
+        action="store_true",
+        help="After extract, open review UI if manual_review or entity needs_review (requires --fund-id)",
+    )
+    extract.add_argument("--review-port", type=int, default=8765)
 
     compare = sub.add_parser("compare", help="Compare extraction output with vendor CSV")
     compare.add_argument("--extraction-dir", required=True, type=Path)
@@ -66,6 +76,36 @@ def build_parser() -> argparse.ArgumentParser:
     batch.add_argument("--input", required=True, type=Path)
     batch.add_argument("--vendor-csv", required=False, type=Path)
     batch.add_argument("--out", required=True, type=Path)
+
+    doc_survey = sub.add_parser(
+        "document-survey",
+        help="Process every PDF independently (document_id output; never collapse report periods)",
+    )
+    doc_survey.add_argument("--input", required=True, type=Path)
+    doc_survey.add_argument("--out", required=True, type=Path)
+    doc_survey.add_argument(
+        "--funds",
+        required=False,
+        type=str,
+        help="Optional comma-separated fund folder names to include",
+    )
+    doc_survey.add_argument(
+        "--no-compare",
+        action="store_true",
+        help="Route/extract only; skip vendor compare",
+    )
+    doc_survey.add_argument(
+        "--vendor-csv",
+        required=False,
+        type=Path,
+        help="Vendor holdings CSV (needed with --open-review)",
+    )
+    doc_survey.add_argument(
+        "--open-review",
+        action="store_true",
+        help="After survey, open review UI for the first PDF that needs human review",
+    )
+    doc_survey.add_argument("--review-port", type=int, default=8765)
 
     scanned = sub.add_parser(
         "scanned-ocr",
@@ -93,6 +133,70 @@ def build_parser() -> argparse.ArgumentParser:
     castanea.add_argument("--mapping-config", required=False, type=Path)
     castanea.add_argument("--vendor-csv", required=False, type=Path)
     castanea.add_argument("--as-of", required=False, type=str, help="Expected ISO as-of date, e.g. 2025-12-31")
+
+    review = sub.add_parser(
+        "review-mapping",
+        help="Open localhost browser UI to review entity mappings and run draft compare",
+    )
+    review.add_argument("--extraction-dir", required=True, type=Path)
+    review.add_argument("--vendor-csv", required=False, type=Path)
+    review.add_argument("--fund-id", required=True, type=str)
+    review.add_argument("--as-of", required=False, type=str)
+    review.add_argument("--port", type=int, default=8765)
+    review.add_argument("--no-browser", action="store_true")
+
+    draft = sub.add_parser(
+        "draft-compare",
+        help="Build mapping proposal + draft mapping and run compare (no browser)",
+    )
+    draft.add_argument("--extraction-dir", required=True, type=Path)
+    draft.add_argument("--vendor-csv", required=False, type=Path)
+    draft.add_argument("--fund-id", required=True, type=str)
+    draft.add_argument("--as-of", required=False, type=str)
+    draft.add_argument("--rebuild-proposal", action="store_true")
+    draft.add_argument("--llm", action="store_true", help="Enable optional LLM entity ranking")
+    draft.add_argument(
+        "--open-review",
+        action="store_true",
+        default=None,
+        help="Force open localhost review UI after draft compare",
+    )
+    draft.add_argument(
+        "--no-open-review",
+        action="store_true",
+        help="Never auto-open review UI even when needs_review remains",
+    )
+    draft.add_argument("--review-port", type=int, default=8765)
+
+    promote = sub.add_parser(
+        "promote-mapping",
+        help="Explicitly promote draft mapping into approved_mappings + registry",
+    )
+    promote.add_argument("--extraction-dir", required=True, type=Path)
+    promote.add_argument("--fund-id", required=True, type=str)
+    promote.add_argument("--reviewer", required=True, type=str)
+    promote.add_argument("--confirm", action="store_true", help="Required to write files")
+    promote.add_argument("--preview-only", action="store_true")
+
+    llm_usage = sub.add_parser(
+        "llm-usage",
+        help="Register current user / show LLM spend, or run a one-shot router smoke test",
+    )
+    llm_usage.add_argument("--register", action="store_true", help="Register current OS user (idempotent)")
+    llm_usage.add_argument("--user", type=str, default=None, help="Override identifier (else PDF_VALIDATION_USER / getpass)")
+    llm_usage.add_argument("--summary", action="store_true", help="Print usage summary")
+    llm_usage.add_argument("--test", action="store_true", help="Run one recorded echo (or --live) call")
+    llm_usage.add_argument("--live", action="store_true", help="With --test, call live OpenAI/Anthropic backend")
+    llm_usage.add_argument(
+        "--open-review-demo",
+        action="store_true",
+        help="After test, draft-compare a survey fund and auto-open review if needs approval",
+    )
+    llm_usage.add_argument("--extraction-dir", type=Path, default=None)
+    llm_usage.add_argument("--fund-id", type=str, default="A9ffbf3")
+    llm_usage.add_argument("--as-of", type=str, default="2025-12-31")
+    llm_usage.add_argument("--vendor-csv", type=Path, default=None)
+    llm_usage.add_argument("--review-port", type=int, default=8765)
 
     return parser
 
@@ -185,7 +289,55 @@ def main(argv: list[str] | None = None) -> int:
             "fund_aggregate": payload.get("fund_aggregate"),
             "export_paths": payload.get("export_paths"),
         }
-        print(json.dumps(summary, indent=2, default=str))
+        # Wire extract → mapping proposal (+ optional review UI)
+        if args.fund_id:
+            from pdf_validation.mapping_onboarding import (
+                build_proposal_for_extraction,
+                maybe_open_mapping_review,
+                review_open_reason,
+            )
+
+            vendor = args.vendor_csv or (repo_root / "holdings_anonymized.csv")
+            as_of = args.as_of or (payload.get("route") or {}).get("as_of_date")
+            proposal = build_proposal_for_extraction(
+                extraction_dir=args.out.resolve(),
+                vendor_csv=Path(vendor).resolve(),
+                fund_id=args.fund_id,
+                as_of_date=as_of,
+                llm_enabled=str(os.environ.get("PDF_VALIDATION_LLM", "")).strip().lower() in {"1", "true", "yes", "on"},
+            )
+            decision = review_open_reason(
+                extraction_dir=args.out.resolve(),
+                vendor_csv=Path(vendor).resolve(),
+                fund_id=args.fund_id,
+                as_of_date=as_of,
+            )
+            needs = decision.get("needs_review_unresolved") or []
+            summary["mapping_proposal"] = {
+                "proposal_id": proposal.get("proposal_id"),
+                "summary": proposal.get("summary"),
+                "needs_review_unresolved": needs,
+                "extraction_gate": decision.get("extraction_gate"),
+                "open_reason": decision.get("reason"),
+                "proposal_path": str(args.out.resolve() / "mapping_review" / "mapping_proposal.json"),
+            }
+            print(json.dumps(summary, indent=2, default=str))
+            if args.open_review and decision.get("should_open"):
+                maybe_open_mapping_review(
+                    extraction_dir=args.out.resolve(),
+                    vendor_csv=Path(vendor).resolve(),
+                    fund_id=args.fund_id,
+                    as_of_date=as_of,
+                    repo_root=repo_root,
+                    pkg_root=_pkg_root(),
+                    port=args.review_port,
+                    open_browser=True,
+                    block=True,
+                )
+            elif args.open_review:
+                print(f"No human review needed ({decision.get('reason')}); skipping review UI.")
+        else:
+            print(json.dumps(summary, indent=2, default=str))
         mode = (payload.get("route") or {}).get("extraction_mode")
         if mode in {"blocked_narrative", "fund_aggregate_only"}:
             return 0
@@ -218,8 +370,194 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"results": n, "out": str(args.out)}, indent=2))
         return 0
 
+    if args.command == "document-survey":
+        from pdf_validation.document_survey import open_first_pending_review, run_document_survey
+
+        funds = [x.strip() for x in (args.funds or "").split(",") if x.strip()] or None
+        report = run_document_survey(
+            args.input.resolve(),
+            out_root=args.out.resolve(),
+            fund_ids=funds,
+            run_compare=not args.no_compare,
+        )
+        review_info = None
+        if args.open_review:
+            vendor = args.vendor_csv or (repo_root / "holdings_anonymized.csv")
+            review_info = open_first_pending_review(
+                report,
+                vendor_csv=Path(vendor).resolve(),
+                port=args.review_port,
+                open_browser=True,
+                block=False,
+            )
+        print(
+            json.dumps(
+                {
+                    "input_pdf_count": report.get("input_pdf_count"),
+                    "result_count": report.get("result_count"),
+                    "out": str(args.out),
+                    "review": review_info,
+                },
+                indent=2,
+                default=str,
+            )
+        )
+        return 0 if report.get("input_pdf_count") == report.get("result_count") else 2
+
     if args.command in {"scanned-ocr", "castanea-ocr"}:
         return _run_scanned_ocr_command(args, repo_root)
+
+    if args.command == "review-mapping":
+        from pdf_validation.mapping_review_server import serve_mapping_review
+
+        vendor = args.vendor_csv or (repo_root / "holdings_anonymized.csv")
+        server = serve_mapping_review(
+            extraction_dir=args.extraction_dir.resolve(),
+            vendor_csv=Path(vendor).resolve(),
+            fund_id=args.fund_id,
+            as_of_date=args.as_of,
+            repo_root=repo_root,
+            pkg_root=_pkg_root(),
+            port=args.port,
+            open_browser=not args.no_browser,
+        )
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print("\nStopped.")
+        finally:
+            server.server_close()
+        return 0
+
+    if args.command == "draft-compare":
+        from pdf_validation.mapping_onboarding import maybe_open_mapping_review, run_draft_compare
+
+        vendor = args.vendor_csv or (repo_root / "holdings_anonymized.csv")
+        if args.llm:
+            os.environ.setdefault("PDF_VALIDATION_LLM", "1")
+        summary = run_draft_compare(
+            extraction_dir=args.extraction_dir.resolve(),
+            vendor_csv=Path(vendor).resolve(),
+            fund_id=args.fund_id,
+            as_of_date=args.as_of,
+            repo_root=repo_root,
+            pkg_root=_pkg_root(),
+            rebuild_proposal=args.rebuild_proposal,
+            llm_enabled=args.llm,
+        )
+        print(json.dumps(summary, indent=2, default=str))
+        should_open = False
+        if args.no_open_review:
+            should_open = False
+        elif args.open_review:
+            should_open = True
+        else:
+            should_open = bool(summary.get("needs_human_review"))
+        if should_open:
+            maybe_open_mapping_review(
+                extraction_dir=args.extraction_dir.resolve(),
+                vendor_csv=Path(vendor).resolve(),
+                fund_id=args.fund_id,
+                as_of_date=args.as_of,
+                repo_root=repo_root,
+                pkg_root=_pkg_root(),
+                port=args.review_port,
+                open_browser=True,
+                block=True,
+                force=bool(args.open_review),
+            )
+        return 0 if summary.get("comparability_status") == "comparable" else 2
+
+    if args.command == "llm-usage":
+        from pdf_validation.llm.usage_router import smoke_test_router
+        from pdf_validation.llm.usage_store import current_user_identifier, register_user, usage_summary
+
+        if args.user:
+            os.environ["PDF_VALIDATION_USER"] = args.user
+        out: dict = {"current_user": current_user_identifier()}
+        if args.register or not (args.summary or args.test or args.open_review_demo):
+            out["register"] = register_user(args.user)
+        if args.test or args.live:
+            out["smoke"] = smoke_test_router(live=bool(args.live))
+        if args.summary or not (args.test or args.open_review_demo):
+            out["summary"] = usage_summary(user=args.user)
+        print(json.dumps(out, indent=2, default=str))
+        if args.open_review_demo:
+            from pdf_validation.mapping_onboarding import maybe_open_mapping_review, run_draft_compare
+            from pdf_validation.mapping_review_server import serve_mapping_review
+
+            extr = args.extraction_dir or (
+                _pkg_root() / "outputs" / "five_fund_survey" / "A9ffbf3_(mgr_Ad7e703)"
+            )
+            vendor = args.vendor_csv or (repo_root / "holdings_anonymized.csv")
+            review_state = Path(extr) / "mapping_review" / "review_state.json"
+            if review_state.exists():
+                review_state.unlink()
+            summary = run_draft_compare(
+                extraction_dir=Path(extr).resolve(),
+                vendor_csv=Path(vendor).resolve(),
+                fund_id=args.fund_id,
+                as_of_date=args.as_of,
+                repo_root=repo_root,
+                pkg_root=_pkg_root(),
+                rebuild_proposal=True,
+                llm_enabled=False,
+            )
+            print(json.dumps({"draft_compare": summary}, indent=2, default=str))
+            if summary.get("needs_human_review"):
+                maybe_open_mapping_review(
+                    extraction_dir=Path(extr).resolve(),
+                    vendor_csv=Path(vendor).resolve(),
+                    fund_id=args.fund_id,
+                    as_of_date=args.as_of,
+                    repo_root=repo_root,
+                    pkg_root=_pkg_root(),
+                    port=args.review_port,
+                    open_browser=True,
+                    block=True,
+                )
+            else:
+                print("No unresolved needs_review; opening review UI for inspection anyway.")
+                server = serve_mapping_review(
+                    extraction_dir=Path(extr).resolve(),
+                    vendor_csv=Path(vendor).resolve(),
+                    fund_id=args.fund_id,
+                    as_of_date=args.as_of,
+                    repo_root=repo_root,
+                    pkg_root=_pkg_root(),
+                    port=args.review_port,
+                    open_browser=True,
+                )
+                try:
+                    server.serve_forever()
+                except KeyboardInterrupt:
+                    print("\nStopped.")
+                finally:
+                    server.server_close()
+        return 0 if out.get("smoke", {}).get("ok", True) else 1
+
+    if args.command == "promote-mapping":
+        from pdf_validation.mapping_onboarding import preview_promote_diff, promote_draft_mapping
+
+        if args.preview_only or not args.confirm:
+            preview = preview_promote_diff(
+                extraction_dir=args.extraction_dir.resolve(),
+                fund_id=args.fund_id,
+                pkg_root=_pkg_root(),
+            )
+            print(json.dumps(preview, indent=2, default=str))
+            if not args.confirm:
+                print("\nRe-run with --confirm to write approved mapping + registry.")
+            return 0
+        result = promote_draft_mapping(
+            extraction_dir=args.extraction_dir.resolve(),
+            fund_id=args.fund_id,
+            reviewer=args.reviewer,
+            pkg_root=_pkg_root(),
+            confirm=True,
+        )
+        print(json.dumps(result, indent=2, default=str))
+        return 0
 
     parser.error(f"Unknown command: {args.command}")
     return 2
