@@ -13,6 +13,14 @@ pdf_validation/outputs/
 pdf_validation/.venv/
 pdf_validation/.venv_ocr/
 pdf_validation/.pytest_cache/
+pdf_validation/configs/llm_usage/users.json
+pdf_validation/configs/llm_usage/usage_log.jsonl
+pdf_validation/configs/llm_usage/*.bak
+pdf_validation/configs/llm_cache/**
+pdf_validation/configs/llm_usage/**
+pdf_validation/configs/generated/
+pdf_validation/configs/vendor_mapping_registry.json.bak
+
 
 # Quarterly cleaning pipeline outputs (runs, snapshots, staged PDFs)
 cleaning_pipeline/runs/

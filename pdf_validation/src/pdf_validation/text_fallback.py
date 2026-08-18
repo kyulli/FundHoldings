@@ -51,15 +51,15 @@ def parse_company_subtotals_from_text(
 
     companies: list[dict[str, Any]] = []
     active: str | None = None
+    from pdf_validation.watermark import read_clean_page_lines
+
     with pdfplumber.open(pdf_path) as doc:
         for page_num in inv_pages:
             if page_num < 1 or page_num > len(doc.pages):
                 continue
             page = doc.pages[page_num - 1]
-            for line in (page.extract_text() or "").splitlines():
-                text = line.strip()
-                if not text:
-                    continue
+            lines, _ = read_clean_page_lines(page)
+            for text in lines:
                 low = text.lower()
                 if any(low.startswith(p) for p in skip_prefixes):
                     continue
@@ -214,12 +214,15 @@ def parse_audited_portfolio_from_text(
             companies.append(_company_row(active, page_num, cost, fv, None, None, cost, fv))
         last_series_cost_fv = None
 
+    from pdf_validation.watermark import read_clean_page_lines
+
     with pdfplumber.open(pdf_path) as doc:
         for page_num in inv_pages:
             if page_num < 1 or page_num > len(doc.pages):
                 continue
-            for line in (doc.pages[page_num - 1].extract_text() or "").splitlines():
-                text = line.strip().rstrip("*").strip()
+            lines, _ = read_clean_page_lines(doc.pages[page_num - 1])
+            for raw_line in lines:
+                text = raw_line.rstrip("*").strip()
                 if not text:
                     continue
                 low = text.lower()
@@ -272,12 +275,28 @@ def parse_condensed_positions_from_text(
     pdf_path: Path | str,
     inv_pages: list[int],
 ) -> list[dict[str, Any]]:
-    """Parse Perry-style condensed schedule rows with entity_grain labels."""
+    """Parse condensed schedule rows with entity_grain labels.
+
+    Supports both equity-style rows (shares/cost/fv/%) and private-credit rows
+    (name, coupon, due date, instrument type, %, par, fair value).
+    """
     security_re = re.compile(
         r"^(?P<name>.+?)\s+(?P<shares>[\d,\s]+)\s+(?P<cost>[\d,]+)\s+(?P<fv>[\d,]+)\s+(?P<pct>[\d.]+)\s*%?\s*$"
     )
     rollup_re = re.compile(
         r"^(?P<name>.+?)\s+\$\s*(?P<cost>[\d,]+)\s+\$\s*(?P<fv>[\d,]+)\s+(?P<pct>[\d.]+)\s*%?\s*$"
+    )
+    credit_re = re.compile(
+        r"^(?P<name>.+?),\s*(?P<coupon>[\d.]+%|due)\s*.*?\s+"
+        r"(?P<type>Term loan|Delayed draw term loan|Revolving credit facility|Equity|Other)\s+"
+        r"(?P<pct>\(?-?[\d.]+%?\))\s+"
+        r"(?P<a>[\d,]+|-)\s+(?P<b>[\d,]+|-)\s*$",
+        re.I,
+    )
+    credit_re2 = re.compile(
+        r"^(?P<name>[A-Za-z][A-Za-z0-9 .,&'’/()-]+?),\s*[\d.]+%,\s*due\s+\d{1,2}/\d{1,2}/\d{4}\s+"
+        r"(?P<type>[A-Za-z][A-Za-z ]+?)\s+(?P<pct>\(?-?[\d.]+\)?%?)\s+"
+        r"(?P<par>[\d,]+|-)\s+(?P<fv>[\d,]+|-)\s*$"
     )
     skip_exact = {
         "investments",
@@ -288,6 +307,8 @@ def parse_condensed_positions_from_text(
         "% of",
         "capital",
         "number of shares x cost x fair value x capital",
+        "first lien debt",
+        "investments, at fair value",
     }
     countries = {
         "france",
@@ -302,6 +323,7 @@ def parse_condensed_positions_from_text(
         "japan",
         "ireland",
         "switzerland",
+        "australia",
     }
     sectors = {
         "consumer staples",
@@ -316,17 +338,46 @@ def parse_condensed_positions_from_text(
         "health care",
         "energy",
         "materials",
+        "application software",
+        "advertising",
+        "aerospace & defense",
+        "commodity chemicals",
+        "diversified financial services",
+        "health care supplies",
+        "health care technology",
+        "industrial machinery & supplies & components",
+        "life sciences tools & services",
+        "office services & supplies",
+        "packaged foods & meats",
     }
+    header_noise = (
+        "consolidated",
+        "financial statements",
+        "condensed schedule",
+        "fidelity evergreen",
+        "percentage of",
+        "partners’ capital",
+        "partners' capital",
+        "par amount",
+        "fair value ($)",
+        "december",
+        "report of independent",
+    )
     rows: list[dict[str, Any]] = []
+    from pdf_validation.watermark import read_clean_page_lines
+
     with pdfplumber.open(pdf_path) as doc:
         for page_num in inv_pages:
             if page_num < 1 or page_num > len(doc.pages):
                 continue
-            for line in (doc.pages[page_num - 1].extract_text() or "").splitlines():
+            lines, _ = read_clean_page_lines(doc.pages[page_num - 1])
+            for line in lines:
                 text = re.sub(r"\s+", " ", line.strip())
                 if not text:
                     continue
                 low = text.lower()
+                if any(tok in low for tok in header_noise) and not re.search(r"\b(llc|inc|ltd|corp)\b", low):
+                    continue
                 if low.startswith("condensed schedule") or low.startswith("perry creek"):
                     continue
                 if low.startswith("december") or low.startswith("partners"):
@@ -336,16 +387,36 @@ def parse_condensed_positions_from_text(
                 if low.startswith("total"):
                     continue
 
+                # Private-credit condensed rows.
+                m_credit = credit_re2.match(text) or credit_re.match(text)
+                if m_credit:
+                    name = m_credit.group("name").strip()
+                    if name.lower() in countries or name.lower() in sectors:
+                        continue
+                    fv_raw = m_credit.groupdict().get("fv") or m_credit.groupdict().get("b") or "0"
+                    par_raw = m_credit.groupdict().get("par") or m_credit.groupdict().get("a") or "0"
+                    fv = re.sub(r"[^\d]", "", fv_raw)
+                    par = re.sub(r"[^\d]", "", par_raw)
+                    if not fv and not par:
+                        continue
+                    # Cost is usually only on country/sector totals for this layout.
+                    # Keep Fair Value as the comparable amount; Cost left as 0 with flag.
+                    use_fv = fv or par
+                    row = _company_row(name, page_num, "0", use_fv, None, None, "0", use_fv)
+                    row["entity_grain"] = "security"
+                    row["cost_unavailable"] = True
+                    row["par_amount_normalized"] = par or None
+                    rows.append(row)
+                    continue
+
                 grain = "security"
                 m = security_re.match(text.replace("$", " "))
                 if m and "$" in line:
-                    # lines with explicit $ before amounts and no shares often rollups
                     pass
                 if not m:
                     m = rollup_re.match(text)
                     grain = "sector_rollup"
                 if not m:
-                    # Try security without requiring percent formatting quirks
                     m2 = re.match(
                         r"^(?P<name>[A-Za-z][A-Za-z0-9 .,&'()-]+?)\s+([\d,\s]{3,})\s+([\d,]{4,})\s+([\d,]{4,})\s+([\d.]+)\s*%?",
                         text.replace("$", " "),

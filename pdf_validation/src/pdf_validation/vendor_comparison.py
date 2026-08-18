@@ -1325,6 +1325,7 @@ def compare_with_vendor(
     amount_comparisons: list[dict[str, Any]] = []
     alarms: list[dict[str, Any]] = []
     matrix_summary: dict[str, Any] = {}
+    llm_entity_audit: list[dict[str, Any]] = []
 
     if fund_id and not vendor_df.empty:
         pdf_date = mapping["comparability"]["as_of_date"].get("pdf_normalized_expected")
@@ -1339,6 +1340,14 @@ def compare_with_vendor(
         realized_names = sorted({lot["company_name"] for lot in realized_lots if lot.get("company_name")})
         if grain_cfg.get("fuzzy_candidate_generation"):
             entity_candidates = _fuzzy_candidates(pdf_names + realized_names, vendor_names)
+            try:
+                from pdf_validation.llm.entity_ranker import enrich_fuzzy_with_llm
+
+                entity_candidates, llm_entity_audit = enrich_fuzzy_with_llm(entity_candidates)
+            except Exception:  # noqa: BLE001
+                llm_entity_audit = []
+        else:
+            llm_entity_audit = []
         for entity in all_confirmed:
             entity_candidates.append(
                 {
@@ -1536,6 +1545,7 @@ def compare_with_vendor(
         "spot_checks": spot_checks,
         "entity_candidates": entity_candidates,
         "entity_mappings_confirmed": all_confirmed,
+        "llm_entity_audit": llm_entity_audit,
         "pdf_comparable_metrics": pdf_metrics,
         "amount_comparisons": amount_comparisons,
         "alarms": alarms,
@@ -1579,6 +1589,12 @@ def compare_with_vendor(
     report_path = output_dir / report_name
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
     export_paths["report_json"] = str(report_path)
+
+    llm_audit_rows = report.get("llm_entity_audit") or []
+    if llm_audit_rows:
+        llm_path = output_dir / "llm_entity_audit.jsonl"
+        _write_jsonl(llm_path, llm_audit_rows)
+        export_paths["llm_entity_audit"] = str(llm_path)
 
     if statement_mode:
         alarm_path = output_dir / "alarm_summary.json"
