@@ -1,90 +1,88 @@
 """
-Core data models for the diagnosis and reliability framework.
-
-All upstream sources should be converted into StandardIssue objects before
-they enter diagnosis, severity scoring, reliability assessment, or export.
+Data models for Office-facing Exception Review Queue.
 """
 
-from __future__ import annotations
-
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, asdict
 from typing import Any
 
 
 @dataclass
-class StandardIssue:
+class ExceptionIssue:
     """
-    Canonical representation of one data-quality issue.
+    A single exception record produced from validation outputs.
     """
 
-    # Identity
+    # Identification
     issue_id: str
-    source_system: str
-    issue_type: str
+
+    exception_type: str
 
     fund_id: str | None = None
+
     manager_id: str | None = None
+
     source_asset: str | None = None
+
     as_at_date: str | None = None
-    field: str | None = None
+
+
+    # Issue Description
+    description: str | None = None
 
     issue_detail: str | None = None
-    source_report: str | None = None
 
-    # Structured values / evidence
+
+    # Evidence
+    evidence_available: str | None = None
+
+
+    # Original values
     reported_value: Any = None
+
     derived_value: Any = None
 
-    pdf_value: Any = None
-    vendor_value: Any = None
-    difference: float | None = None
-    difference_pct: float | None = None
 
+    # Financial evidence
     current_cost: float | None = None
+
     unrealized_value: float | None = None
+
     realized_proceeds: float | None = None
 
-    # PDF / extraction evidence
+
+    # PDF / Vendor comparison
+    pdf_value: Any = None
+
+    vendor_value: Any = None
+
+    difference: float | None = None
+
+
+    # PDF evidence
     pdf_page: int | None = None
+
     pdf_source: str | None = None
 
-    extraction_mode: str | None = None
     extraction_quality: str | None = None
-    parser: str | None = None
 
-    # Entity-resolution evidence
-    canonical_entity: str | None = None
-    entity_resolution_status: str | None = None
-    entity_resolution_confidence: str | None = None
-    entity_resolution_reason: str | None = None
-    entity_resolution_followup: bool | None = None
-    
-    # Mapping / comparability evidence
     mapping_status: str | None = None
-    mapping_confidence: float | None = None
 
-    comparison_status: str | None = None
     comparability_status: str | None = None
 
-    # Diagnosis outputs
-    #
-    # These are intentionally empty when the issue is first built.
-    # Downstream modules populate them.
-    root_cause: str | None = None
-    severity: str | None = None
-    severity_score: float | None = None
 
-    confidence: str | None = None
-    evidence_strength: str | None = None
+    # Diagnosis Output
+    diagnosis: str | None = None
 
-    decision_state: str | None = None
     recommended_action: str | None = None
-    review_required: bool | None = None
 
-    # Explainability
-    diagnosis_reason: str | None = None
-    reliability_reason: str | None = None
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert this issue into a dictionary for DataFrame/export use."""
+    # Review Metadata
+    review_required: bool = True
+
+
+    def to_dict(self) -> dict:
+        """
+        Convert issue to dictionary for dataframe/export.
+        """
+
         return asdict(self)

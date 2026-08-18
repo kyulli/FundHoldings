@@ -1,75 +1,81 @@
 """
-Run the complete diagnosis and reliability workflow.
+Main pipeline for Office-facing Exception Review Queue.
 """
 
-from __future__ import annotations
-from collections import Counter
-
-from diagnosis_reliability.adapters.report_adapter import load_report_issues
-from diagnosis_reliability.diagnosis import diagnose_issues
-from diagnosis_reliability.recommendations import generate_recommendations
-from diagnosis_reliability.reliability import assess_reliability
-from diagnosis_reliability.severity import score_issue_severities
+from diagnosis_reliability.loaders import load_all_validation_outputs
+from diagnosis_reliability.issue_builder import build_all_issues
+from diagnosis_reliability.diagnosis import diagnose_all
+from diagnosis_reliability.recommendations import recommend_all
 from diagnosis_reliability.export import export_diagnosis_report
 
-from diagnosis_reliability.adapters.entity_resolution_adapter import (
-    enrich_issues_with_entity_resolution,
-)
 
-def run_diagnosis():
-    """
-    Run the current report-based diagnosis workflow.
-    """
+def run():
 
-    issues = load_report_issues()
-    issues = enrich_issues_with_entity_resolution(
+    print("=" * 60)
+    print("Starting Exception Diagnosis Pipeline")
+    print("=" * 60)
+
+    # 1. Load validation outputs
+    print("\n[1/5] Loading validation outputs...")
+
+    validation_outputs = (
+        load_all_validation_outputs()
+    )
+
+    for name, data in validation_outputs.items():
+
+        if hasattr(data, "shape"):
+            print(
+                f"{name}: {data.shape}"
+            )
+
+        elif isinstance(data, list):
+            print(
+                f"{name}: {len(data)} issues"
+            )
+
+        else:
+            print(
+                f"{name}: loaded"
+            )
+
+    # 2. Build issues
+    print("\n[2/5] Building exception issues...")
+
+    issues = build_all_issues(
+        validation_outputs
+    )
+
+    print(
+        f"Total exceptions generated: {len(issues)}"
+    )
+
+    # 3. Diagnosis
+    print("\n[3/5] Generating diagnosis...")
+
+    issues = diagnose_all(
         issues
     )
-    issues = diagnose_issues(issues)
-    issues = score_issue_severities(issues)
-    issues = assess_reliability(issues)
-    issues = generate_recommendations(issues)
 
-    return issues
+    # 4. Recommendation
+    print("\n[4/5] Generating recommendations...")
+
+    issues = recommend_all(
+        issues
+    )
+
+    # 5. Export
+    print("\n[5/5] Exporting report...")
+
+    output = export_diagnosis_report(
+        issues
+    )
+
+    print("\nCompleted.")
+    print(
+        f"Output: {output}"
+    )
 
 
 if __name__ == "__main__":
-    results = run_diagnosis()
-
-    print(f"Evaluated issues: {len(results)}")
-
-    root_cause_counts = Counter(
-        issue.root_cause
-        for issue in results
-    )
-
-    confidence_counts = Counter(
-        issue.confidence
-        for issue in results
-    )
-
-    decision_counts = Counter(
-        issue.decision_state
-        for issue in results
-    )
-
-    print(
-        "Root-cause status:",
-        dict(root_cause_counts),
-    )
-
-    print(
-        "Diagnosis confidence:",
-        dict(confidence_counts),
-    )
-
-    print(
-        "Office decision queue:",
-        dict(decision_counts),
-    )
-
-    output_path = export_diagnosis_report(results)
-
-    print(
-        f"Report written to: {output_path}"
-    )
+    run()
