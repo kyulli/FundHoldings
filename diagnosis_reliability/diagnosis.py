@@ -1,121 +1,85 @@
 """
-Root-cause diagnosis logic for standardized data-quality issues.
+Generate business-facing diagnosis explanations.
 """
 
-from __future__ import annotations
+from typing import List
 
-from diagnosis_reliability.config import CONFIDENCE_LEVELS, ROOT_CAUSES
-from diagnosis_reliability.models import StandardIssue
+from .models import ExceptionIssue
 
 
-def diagnose_missing_field(issue: StandardIssue) -> StandardIssue:
+def diagnose_issue(issue: ExceptionIssue) -> ExceptionIssue:
     """
-    Diagnose a missing-field issue conservatively.
-
-    A missing value in the vendor dataset does not by itself prove whether
-    the source PDF omitted the field or whether extraction failed.
+    Add diagnosis explanation based on exception type.
     """
 
-    issue.root_cause = ROOT_CAUSES["unknown"]
-    issue.confidence = CONFIDENCE_LEVELS["low"]
-    issue.evidence_strength = "LOW"
+    if issue.exception_type == "Missing Field":
 
-    issue.diagnosis_reason = (
-        "The expected field is missing from the structured dataset, but "
-        "no source-PDF evidence is currently attached to determine whether "
-        "the field was not reported or was missed during extraction."
-    )
-
-    issue.recommended_action = (
-        "Verify the field against the source report before assigning a "
-        "confirmed root cause or correcting the structured data."
-    )
-
-    issue.review_required = True
-
-    return issue
-
-
-def diagnose_deal_status_mismatch(issue: StandardIssue) -> StandardIssue:
-    """
-    Diagnose disagreement between reported and numerically derived Deal Status.
-    """
-
-    reported = issue.reported_value
-    derived = issue.derived_value
-
-    numeric_evidence_available = any(
-        value is not None
-        for value in [
-            issue.current_cost,
-            issue.unrealized_value,
-            issue.realized_proceeds,
-        ]
-    )
-
-    issue.root_cause = ROOT_CAUSES["status_logic"]
-
-    if reported is not None and derived is not None and numeric_evidence_available:
-        issue.confidence = CONFIDENCE_LEVELS["medium"]
-        issue.evidence_strength = "MEDIUM"
-
-        issue.diagnosis_reason = (
-            f"The reported Deal Status ({reported!r}) conflicts with the "
-            f"status implied by available financial values ({derived!r}). "
-            "The discrepancy is supported by structured numeric evidence, "
-            "but the source PDF has not yet been used to confirm which value "
-            "should be treated as authoritative."
+        issue.diagnosis = (
+            "Cause cannot be determined without source evidence. "
+            "The missing value may reflect either non-disclosure "
+            "or an extraction gap."
         )
+
+    elif issue.exception_type == "Deal Status Inconsistency":
+
+        # Special Written Off case
+        if (
+            issue.issue_detail
+            and "Realized Proceeds is negative"
+            in issue.issue_detail
+        ):
+
+            issue.diagnosis = (
+                "Current classification rule treats non-zero "
+                "Realized Proceeds as Fully Exited, while "
+                "vendor classification treats the investment "
+                "as Written Off. Business definition confirmation "
+                "is required."
+            )
+
+        else:
+
+            issue.diagnosis = (
+                "Reported Deal Status differs from "
+                "financial-value-based classification. "
+                "Source confirmation is required."
+            )
+
+    elif issue.exception_type == "Entity Mapping Review":
+
+        issue.diagnosis = (
+            "Entity mapping between PDF extracted company "
+            "name and structured holdings data is not confirmed."
+        )
+
+    elif issue.exception_type == "PDF / Vendor Value Difference":
+
+        issue.diagnosis = (
+            "PDF extracted value differs from structured "
+            "holdings data. Source verification is required."
+        )
+
+    elif issue.exception_type == "PDF Comparison Blocked":
+
+        issue.diagnosis = (
+            "PDF validation checks prevented automated "
+            "comparison. Extraction or document review is required."
+        )
+
     else:
-        issue.confidence = CONFIDENCE_LEVELS["low"]
-        issue.evidence_strength = "LOW"
 
-        issue.diagnosis_reason = (
-            "Reported and derived Deal Status differ, but the supporting "
-            "numeric evidence is incomplete."
+        issue.diagnosis = (
+            "Exception requires further review."
         )
 
-    issue.recommended_action = (
-        "Verify Deal Status against the source PDF before correcting the "
-        "vendor dataset."
-    )
-
-    issue.review_required = True
 
     return issue
 
 
-def diagnose_issue(issue: StandardIssue) -> StandardIssue:
-    """
-    Apply the appropriate diagnosis rule to one standardized issue.
-    """
+def diagnose_all(
+    issues: List[ExceptionIssue]
+) -> List[ExceptionIssue]:
 
-    if issue.issue_type == "MISSING_FIELD":
-        return diagnose_missing_field(issue)
-
-    if issue.issue_type == "DEAL_STATUS_MISMATCH":
-        return diagnose_deal_status_mismatch(issue)
-
-    issue.root_cause = ROOT_CAUSES["unknown"]
-    issue.confidence = CONFIDENCE_LEVELS["low"]
-    issue.evidence_strength = "LOW"
-    issue.diagnosis_reason = (
-        f"No diagnosis rule has been implemented for issue type "
-        f"{issue.issue_type!r}."
-    )
-    issue.recommended_action = "Manual review required."
-    issue.review_required = True
-
-    return issue
-
-
-def diagnose_issues(
-    issues: list[StandardIssue],
-) -> list[StandardIssue]:
-    """
-    Diagnose a collection of standardized issues.
-    """
-    
     return [
         diagnose_issue(issue)
         for issue in issues
