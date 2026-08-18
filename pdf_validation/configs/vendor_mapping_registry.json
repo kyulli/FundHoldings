@@ -14,13 +14,30 @@
     },
     "A6fcde0": {
       "mapping_config": "configs/A6fcde0_ilpa_fee_reporting_vendor_mapping.json",
-      "template_family": null,
-      "extraction_mode": "fund_aggregate_only"
+      "template_family": "generic_holdings_schedule",
+      "extraction_mode": "position_level_inferred",
+      "notes": "Holdings schedule uses inferred generic path; ILPA fee pages remain fund-aggregate sidecar via statement_parser."
     },
     "A6fcde0_(mgr_A6f625f)": {
       "mapping_config": "configs/A6fcde0_ilpa_fee_reporting_vendor_mapping.json",
-      "template_family": null,
-      "extraction_mode": "fund_aggregate_only"
+      "template_family": "generic_holdings_schedule",
+      "extraction_mode": "position_level_inferred",
+      "notes": "Same mapping as A6fcde0; manager-scoped directory alias."
+    },
+    "A9ffbf3": {
+      "mapping_config": "configs/approved_mappings/A9ffbf3_vendor_mapping.json",
+      "template_family": "generic_holdings_schedule",
+      "extraction_mode": "position_level_inferred"
+    },
+    "Aa7f6d4": {
+      "mapping_config": "configs/approved_mappings/Aa7f6d4_vendor_mapping.json",
+      "template_family": "simple_lot_schedule",
+      "extraction_mode": "position_level"
+    },
+    "A729d8b": {
+      "mapping_config": "configs/approved_mappings/A729d8b_vendor_mapping.json",
+      "template_family": "condensed_hedge_schedule",
+      "extraction_mode": "position_level"
     }
   },
   "default_native_mapping_template": "configs/syn_ventures_fund_ii_q3_2025_vendor_mapping.json"

@@ -122,7 +122,20 @@ def _is_narrative_fragment(name: str) -> bool:
     ):
         # Avoid matching the substring "lp" inside unrelated words; check token boundaries.
         if not re.search(r"\bl\.?p\.?\b", low):
-            return True
+            # Allow short Title-Case portfolio names without legal suffixes
+            # (e.g. "Absolute Foods", "10MS") while still rejecting sentence fragments.
+            words = raw.split()
+            titleish = (
+                1 <= len(words) <= 6
+                and all(
+                    (w[:1].isupper() or w.isdigit() or w.lower() in {"and", "of", "the", "&"})
+                    for w in words
+                )
+                and not any(ch in raw for ch in ".?!:;")
+                and not any(tok in low for tok in (" was ", " were ", " such ", " instead"))
+            )
+            if not titleish:
+                return True
     # Extremely short residue tokens from watermarked notes pages.
     if len(raw) <= 2:
         return True
@@ -139,19 +152,27 @@ def parse_inferred_schedule_companies(
     logical = set(inferred_schema.get("logical_columns") or [])
     company_row_headers = bool(inferred_schema.get("company_row_headers"))
     has_shares = "shares" in logical
-    has_cost = "cost" in logical or not logical
+    has_cost = "cost" in logical
     has_fv = "fair_value" in logical or not logical
+    # When schema is empty, keep legacy permissive behavior.
+    if not logical:
+        has_cost = True
+        has_fv = True
 
     companies: list[dict[str, Any]] = []
     active: str | None = None
     active_page: int | None = None
     lot_amounts: list[int] = []
+    lot_cost_amounts: list[int] = []
 
     def _cost_fv_from_money(money_vals: list[int]) -> tuple[str, str]:
         if not money_vals:
             return "0", "0"
         if len(money_vals) == 1:
             amt = str(money_vals[0])
+            # Fair-value-only schedules: do not invent a distinct Cost.
+            if has_fv and not has_cost:
+                return "0", amt
             return amt, amt
         # Share-count schedules often print: shares_total, carrying_amount.
         if company_row_headers and has_shares:
@@ -159,25 +180,31 @@ def parse_inferred_schedule_companies(
             return amt, amt
         if has_cost and has_fv:
             return str(money_vals[-2]), str(money_vals[-1])
+        # Credit/condensed rows often print: % / par / fair_value — last is FV.
+        if has_fv and not has_cost:
+            return "0", str(money_vals[-1])
         amt = str(money_vals[-1])
         return amt, amt
 
     def flush(*, cost: str | None = None, fv: str | None = None, page: int | None = None) -> None:
-        nonlocal active, active_page, lot_amounts
+        nonlocal active, active_page, lot_amounts, lot_cost_amounts
         if not active or _is_reporting_entity_header(active):
             active = None
             active_page = None
             lot_amounts = []
+            lot_cost_amounts = []
             return
         if cost is None or fv is None:
-            total = sum(lot_amounts)
-            if total <= 0:
+            total_fv = sum(lot_amounts)
+            total_cost = sum(lot_cost_amounts) if lot_cost_amounts else total_fv
+            if total_fv <= 0:
                 active = None
                 active_page = None
                 lot_amounts = []
+                lot_cost_amounts = []
                 return
-            cost = cost or str(total)
-            fv = fv or str(total)
+            cost = cost or str(total_cost)
+            fv = fv or str(total_fv)
         page_num = page or active_page or (inv_pages[0] if inv_pages else 1)
         row = _company_row(active, page_num, cost, fv, None, None, cost, fv)
         row["subtotal_event"] = "inferred_schedule_text"
@@ -188,6 +215,7 @@ def parse_inferred_schedule_companies(
         active = None
         active_page = None
         lot_amounts = []
+        lot_cost_amounts = []
 
     with pdfplumber.open(pdf_path) as doc:
         for page_num in inv_pages:
@@ -256,11 +284,20 @@ def parse_inferred_schedule_companies(
                         continue
                     if name_part.isupper() and len(name_part) > 20:
                         continue
+                    # Security/lot descriptor lines belong to the active company; do not
+                    # promote them to standalone companies or clear the pending name.
+                    if any(tok in name_part.lower() for tok in _SECURITY_TOKENS):
+                        if active:
+                            if has_cost and has_fv and len(money_vals) >= 2:
+                                lot_cost_amounts.append(money_vals[-2])
+                            lot_amounts.append(money_vals[-1])
+                        continue
                     if active and lot_amounts:
                         flush(page=page_num)
                     elif active:
                         active = None
                         lot_amounts = []
+                        lot_cost_amounts = []
                     cost_v, fv_v = _cost_fv_from_money(money_vals)
                     row = _company_row(name_part, page_num, cost_v, fv_v, None, None, cost_v, fv_v)
                     row["subtotal_event"] = "inferred_schedule_text"
@@ -281,6 +318,7 @@ def parse_inferred_schedule_companies(
                     elif active:
                         active = None
                         lot_amounts = []
+                        lot_cost_amounts = []
                     active = text
                     active_page = page_num
                     continue
@@ -292,6 +330,8 @@ def parse_inferred_schedule_companies(
                         lot_amounts = []
                         continue
                     lot_amounts.append(money_vals[-1])
+                    if has_cost and has_fv and len(money_vals) >= 2:
+                        lot_cost_amounts.append(money_vals[-2])
                     continue
 
                 if amounts and name_part and not company_row_headers:
