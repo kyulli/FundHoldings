@@ -4,14 +4,16 @@ from validation outputs.
 """
 
 from typing import List
-
 from .models import ExceptionIssue
-from .config import EXCEPTION_TYPES
+from .config import EXCEPTION_TYPES, ACTIONS
 
+
+# Phase 1 Missing Field Issues
 
 def build_missing_field_issues(df) -> List[ExceptionIssue]:
+
     """
-    Convert missing field validation results
+    Convert Phase 1 missing field findings
     into ExceptionIssue objects.
     """
 
@@ -27,13 +29,18 @@ def build_missing_field_issues(df) -> List[ExceptionIssue]:
         ).split(",")
 
         for field in fields:
+
             field = field.strip()
 
             issues.append(
+
                 ExceptionIssue(
+
                     issue_id=f"MISSING_{idx}_{field}",
 
-                    exception_type=EXCEPTION_TYPES["missing_field"],
+                    exception_type=(
+                        EXCEPTION_TYPES["missing_field"]
+                    ),
 
                     fund_id=row.get(
                         "Fund Allocator ID"
@@ -61,18 +68,30 @@ def build_missing_field_issues(df) -> List[ExceptionIssue]:
                     ),
 
                     evidence_available=(
-                        "Structured dataset indicates missing values; "
-                        "source PDF evidence not yet verified"
-                    )
+                        "Structured holdings data available; "
+                        "source report verification required"
+                    ),
+
+                    diagnosis=(
+                        "Missing information requires "
+                        "confirmation from the source report."
+                    ),
+
+                    recommended_action=(
+                        ACTIONS["verify_source"]
+                    ),
                 )
             )
 
     return issues
 
 
+# Phase 1 Deal Status Issues
+
 def build_deal_status_issues(df) -> List[ExceptionIssue]:
+
     """
-    Convert deal status validation results
+    Convert Phase 1 deal status mismatch findings
     into ExceptionIssue objects.
     """
 
@@ -88,41 +107,15 @@ def build_deal_status_issues(df) -> List[ExceptionIssue]:
             "Deal Status (derived)"
         )
 
-        unrealized = row.get(
-            "Unrealized Value"
-        )
-
-        # Default mismatch description
-        detail = (
-            f"Reported status: {reported}; "
-            f"Derived status: {derived}"
-        )
-
-
-        # Business rule:
-        # Written Off should not have negative Unrealized Value
-        realized = row.get("Realized Proceeds")
-        current_cost = row.get("Current Cost")
-
-        if (
-            str(reported).lower() == "written off"
-        and unrealized == 0
-        and current_cost == 0
-        and realized is not None
-        and realized < 0
-        ):
-            detail = (
-                "Written Off reported while "
-                "Realized Proceeds is negative"
-            )
-
-
         issues.append(
+
             ExceptionIssue(
 
                 issue_id=f"STATUS_{idx}",
 
-                exception_type=EXCEPTION_TYPES["deal_status"],
+                exception_type=(
+                    EXCEPTION_TYPES["deal_status"]
+                ),
 
                 fund_id=row.get(
                     "Fund Allocator ID"
@@ -145,11 +138,14 @@ def build_deal_status_issues(df) -> List[ExceptionIssue]:
                     "from financial-value-based classification"
                 ),
 
-                issue_detail=detail,
+                issue_detail=(
+                    f"Reported status: {reported}; "
+                    f"Derived status: {derived}"
+                ),
 
                 evidence_available=(
                     "Reported status and financial fields "
-                    "available; source PDF confirmation required"
+                    "available; source report confirmation required"
                 ),
 
                 reported_value=reported,
@@ -160,47 +156,97 @@ def build_deal_status_issues(df) -> List[ExceptionIssue]:
                     "Current Cost"
                 ),
 
-                unrealized_value=unrealized,
+                unrealized_value=row.get(
+                    "Unrealized Value"
+                ),
 
                 realized_proceeds=row.get(
                     "Realized Proceeds"
-                )
+                ),
+
+                diagnosis=(
+                    "Potential status classification "
+                    "inconsistency identified."
+                ),
+
+                recommended_action=(
+                    ACTIONS["verify_status"]
+                ),
             )
         )
 
     return issues
 
 
+# Build unified exception queue
+
 def build_all_issues(validation_outputs):
+
     """
-    Build all exception issues.
+    Combine all validation sources into
+    one Office review queue.
     """
 
     issues = []
 
-    if not validation_outputs[
-        "missing_fields"
-    ].empty:
+    # Phase 1 missing fields
+
+    missing_fields = validation_outputs.get(
+        "phase1_missing_fields"
+    )
+
+    if (
+        missing_fields is not None
+        and not missing_fields.empty
+    ):
+
         issues.extend(
             build_missing_field_issues(
-                validation_outputs["missing_fields"]
+                missing_fields
             )
         )
 
-    if not validation_outputs[
-        "deal_status"
-    ].empty:
+
+    # Phase 1 deal status
+
+    deal_status = validation_outputs.get(
+        "phase1_deal_status"
+    )
+
+    if (
+        deal_status is not None
+        and not deal_status.empty
+    ):
+
         issues.extend(
             build_deal_status_issues(
-                validation_outputs["deal_status"]
+                deal_status
             )
         )
 
-    if validation_outputs.get(
-        "pdf_validation"
-    ):
-        issues.extend(
-            validation_outputs["pdf_validation"]
+
+    # PDF validation
+
+    issues.extend(
+        validation_outputs.get(
+            "pdf_validation",
+            []
         )
+    )
+
+
+    # Entity resolution
+
+    entity_resolution = validation_outputs.get(
+        "entity_resolution",
+        []
+    )
+
+    if isinstance(entity_resolution, list):
+
+        issues.extend(
+            entity_resolution
+        )
+        
 
     return issues

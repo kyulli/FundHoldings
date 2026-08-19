@@ -13,11 +13,26 @@ from diagnosis_reliability.config import (
     ENTITY_ALIAS_FILE,
     ENTITY_REVIEW_FILE,
 )
-from diagnosis_reliability.models import StandardIssue
+from diagnosis_reliability.models import ExceptionIssue
 
-# Reuse the upstream entity-resolution normalization logic so this adapter
-# always interprets alias keys exactly the same way as the source pipeline.
-from entity_resolution.resolve import normalize
+
+def normalize_entity_name(name: str | None) -> str:
+    """
+    Normalize entity name for lookup.
+
+    This is only used to match keys from the existing
+    entity resolution output.
+    It does not perform entity resolution.
+    """
+
+    if not name:
+        return ""
+
+    return (
+        str(name)
+        .lower()
+        .strip()
+    )
 
 
 def load_entity_aliases() -> dict:
@@ -79,15 +94,15 @@ def _canonical_from_global_alias(
     if not source_asset:
         return None
 
-    normalized = normalize(source_asset)
+    normalized = normalize_entity_name(source_asset)
 
     return global_aliases.get(normalized)
 
 
 def enrich_issue_with_entity_resolution(
-    issue: StandardIssue,
+    issue: ExceptionIssue,
     aliases: dict,
-) -> StandardIssue:
+) -> ExceptionIssue:
     """
     Attach canonical entity evidence to one standardized issue.
     """
@@ -139,8 +154,8 @@ def enrich_issue_with_entity_resolution(
 
 
 def enrich_issues_with_entity_resolution(
-    issues: list[StandardIssue],
-) -> list[StandardIssue]:
+    issues: list[ExceptionIssue],
+) -> list[ExceptionIssue]:
     """
     Attach entity-resolution evidence to standardized issues.
     """

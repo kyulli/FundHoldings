@@ -5,8 +5,8 @@ into Office-facing ExceptionIssue objects.
 
 import json
 from pathlib import Path
-
 from ..models import ExceptionIssue
+from ..config import ACTIONS
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -24,6 +24,8 @@ def load_jsonl(path: Path) -> list[dict]:
             if line.strip()
         ]
 
+
+# PDF comparison blocked issues
 
 def build_pdf_block_issues(
     gates: list[dict],
@@ -46,9 +48,11 @@ def build_pdf_block_issues(
         issues.append(
             ExceptionIssue(
                 issue_id=f"PDF_GATE_{len(issues)+1}",
+
                 exception_type="PDF Comparison Blocked",
 
                 fund_id=fund_id,
+
                 as_at_date=as_at_date,
 
                 description=(
@@ -57,7 +61,9 @@ def build_pdf_block_issues(
 
                 issue_detail=(
                     f"{gate.get('gate')}: "
-                    f"{gate.get('reason')}"
+                    f"{gate.get('reason')}. "
+                    f"Extraction mode: "
+                    f"{gate.get('extraction_mode')}"
                 ),
 
                 evidence_available=(
@@ -66,28 +72,21 @@ def build_pdf_block_issues(
 
                 pdf_source=source,
 
-                extraction_quality=(
-                    gate.get("extraction_mode")
-                ),
-
-                comparability_status=(
-                    "blocked"
-                ),
-
                 diagnosis=(
-                    "Comparison blocked due to "
-                    "PDF validation failure."
+                    "Comparison blocked because "
+                    "required PDF information was unavailable."
                 ),
 
                 recommended_action=(
-                    "Resolve Extraction — "
-                    "Review PDF/source report"
+                    ACTIONS["resolve_extraction"]
                 ),
             )
         )
 
     return issues
 
+
+# PDF / Vendor value mismatch issues
 
 def build_pdf_amount_issues(
     comparisons: list[dict],
@@ -107,20 +106,33 @@ def build_pdf_amount_issues(
         if row.get("status") != "mismatch":
             continue
 
+        difference = None
+
+        if row.get("difference") is not None:
+
+            try:
+                difference = float(
+                    row["difference"]
+                )
+
+            except Exception:
+                difference = None
+
         issues.append(
             ExceptionIssue(
                 issue_id=f"PDF_AMOUNT_{len(issues)+1}",
 
                 fund_id=fund_id,
+
                 as_at_date=as_at_date,
 
                 exception_type=(
-                    "PDF / Vendor Value Difference"
+                    "PDF / Vendor Value Mismatch"
                 ),
 
                 description=(
                     "Values extracted from PDF differ "
-                    "from vendor dataset"
+                    "from structured holdings data"
                 ),
 
                 issue_detail=(
@@ -144,15 +156,7 @@ def build_pdf_amount_issues(
                     row.get("csv_value")
                 ),
 
-                difference=(
-                    float(row["difference"])
-                    if row.get("difference")
-                    else None
-                ),
-
-                mapping_status=(
-                    row.get("entity_mapping_status")
-                ),
+                difference=difference,
 
                 pdf_source=source,
 
@@ -162,14 +166,15 @@ def build_pdf_amount_issues(
                 ),
 
                 recommended_action=(
-                    "Review Value — "
-                    "Verify PDF/source report"
+                    ACTIONS["review_value"]
                 ),
             )
         )
 
     return issues
 
+
+# Entity mapping review issues
 
 def build_entity_mapping_issues(
     candidates: list[dict],
@@ -180,6 +185,11 @@ def build_entity_mapping_issues(
     """
     Convert unresolved entity mappings
     into review issues.
+
+    Note:
+    Entity resolution logic is owned by the
+    entity resolution pipeline. This adapter only
+    converts unresolved outputs into review items.
     """
 
     issues = []
@@ -191,17 +201,15 @@ def build_entity_mapping_issues(
         if row.get("confirmed"):
             continue
 
-        # Ignore exact fuzzy candidates
-        # unless similarity is low
-
         if similarity is not None and similarity >= 0.95:
             continue
 
         issues.append(
             ExceptionIssue(
-                issue_id=f"PDF_ENTITY_{len(issues)+1}",
+                issue_id=f"ENTITY_MAPPING_{len(issues)+1}",
 
                 fund_id=fund_id,
+
                 as_at_date=as_at_date,
 
                 exception_type=(
@@ -209,7 +217,7 @@ def build_entity_mapping_issues(
                 ),
 
                 description=(
-                    "PDF entity mapping requires review"
+                    "Entity mapping requires review"
                 ),
 
                 issue_detail=(
@@ -228,26 +236,27 @@ def build_entity_mapping_issues(
                     )
                 ),
 
-                mapping_status=(
+                pdf_source=source,
+
+                entity_resolution_status=(
                     row.get("status")
                 ),
 
-                pdf_source=source,
-
                 diagnosis=(
-                    "Entity mapping is not confirmed "
-                    "by approved mapping rules."
+                    "Entity identity could not be confirmed "
+                    "by existing mapping results."
                 ),
 
                 recommended_action=(
-                    "Confirm Mapping — "
-                    "Review entity resolution"
+                    ACTIONS["confirm_mapping"]
                 ),
             )
         )
 
     return issues
 
+
+# Non-comparable PDF reports
 
 def build_comparison_block_issues(
     report: dict,
@@ -260,71 +269,41 @@ def build_comparison_block_issues(
 
     issues = []
 
-    status = report.get(
-        "comparability_status"
-    )
-
-    if status in {
-        "comparable",
-        "aggregate_only_comparable",
-    }:
+    if report.get("comparability_status") == "comparable":
         return issues
-
-    summary = report.get(
-        "summary",
-        {}
-    )
-
-    reason_codes = summary.get(
-        "reason_codes",
-        []
-    )
-
-    reason = (
-        ", ".join(reason_codes)
-        if reason_codes
-        else "Unknown comparability issue"
-    )
 
     issues.append(
         ExceptionIssue(
-            issue_id=(
-                f"PDF_BLOCK_{len(issues)+1}"
-            ),
+            issue_id="PDF_COMPARISON_BLOCKED",
 
             exception_type=(
                 "PDF Comparison Blocked"
             ),
 
             description=(
-                "PDF cannot be automatically "
-                "compared against structured holdings data"
+                "PDF cannot be compared automatically"
             ),
 
             issue_detail=(
-                f"Comparison blocked: {reason}"
+                report.get(
+                    "reason",
+                    "Unknown comparison issue"
+                )
             ),
 
             evidence_available=(
-                "PDF comparison report available"
+                "PDF validation report available"
             ),
 
             pdf_source=source,
 
-            comparability_status=(
-                status
-            ),
-
             diagnosis=(
-                "PDF extraction completed, but "
-                "automated comparison could not "
-                "be completed due to validation "
-                "constraints."
+                "Automated comparison could not be completed "
+                "with available PDF information."
             ),
 
             recommended_action=(
-                "Resolve Extraction — "
-                "Review PDF/source report"
+                ACTIONS["resolve_extraction"]
             ),
         )
     )
@@ -333,75 +312,81 @@ def build_comparison_block_issues(
 
 
 def load_pdf_validation_issues(
-    vendor_comparison_dir: Path,
+    vendor_dir: Path,
     fund_id: str | None = None,
     as_at_date: str | None = None,
 ):
     """
-    Main entry point.
+    Load PDF validation comparison outputs
+    and convert them into ExceptionIssue objects.
     """
 
     issues = []
 
-    gates = load_jsonl(
-        vendor_comparison_dir
-        / "comparability_gates.jsonl"
+    comparison_report = (
+        vendor_dir
+        / "comparison_report.json"
     )
 
-    amounts = load_jsonl(
-        vendor_comparison_dir
-        / "amount_comparisons.jsonl"
-    )
+    if not comparison_report.exists():
+        return issues
 
-    entities = load_jsonl(
-        vendor_comparison_dir
-        / "entity_candidates.jsonl"
-    )
+    with comparison_report.open(
+        encoding="utf-8"
+    ) as f:
 
-    source = str(vendor_comparison_dir)
+        report = json.load(f)
+
+    source = str(vendor_dir)
+
+
+    # Blocked comparison
+
+    gates = report.get(
+        "gates",
+        []
+    )
 
     issues.extend(
         build_pdf_block_issues(
             gates,
-            source,
-            fund_id,
-            as_at_date,
+            source=source,
+            fund_id=fund_id,
+            as_at_date=as_at_date,
         )
+    )
+
+
+    # Value comparison mismatch
+
+    comparisons = report.get(
+        "comparisons",
+        []
     )
 
     issues.extend(
         build_pdf_amount_issues(
-            amounts,
-            source,
-            fund_id,
-            as_at_date,
+            comparisons,
+            source=source,
+            fund_id=fund_id,
+            as_at_date=as_at_date,
         )
+    )
+
+
+    # Entity mapping review
+
+    candidates = report.get(
+        "entity_mapping_candidates",
+        []
     )
 
     issues.extend(
         build_entity_mapping_issues(
-            entities,
-            source,
-            fund_id,
-            as_at_date,
-        )
-    )
-
-    report_path = (
-        vendor_comparison_dir
-        / "comparison_report.json"
-    )
-
-    if report_path.exists():
-        with report_path.open(
-            encoding="utf-8"
-        ) as f:
-            report = json.load(f)
-
-    issues.extend(
-        build_comparison_block_issues(
-            report,
-            source
+            candidates,
+            source=source,
+            fund_id=fund_id,
+            as_at_date=as_at_date,
         )
     )
 
@@ -411,52 +396,69 @@ def load_pdf_validation_issues(
 def build_batch_blocked_issues(
     results: list[dict],
 ):
+    """
+    Convert batch-level PDF validation failures
+    into PDF Comparison Blocked issues.
+    """
 
     issues = []
 
-    for row in results:
+    for idx, row in enumerate(results):
 
-        if not row.get("blocked_reason"):
+        # Only keep blocked cases
+        status = row.get("status")
+
+        if status in [
+            "PASS",
+            "pass",
+            "completed",
+            "success",
+        ]:
             continue
 
         issues.append(
             ExceptionIssue(
-                issue_id=(
-                    f"PDF_BLOCK_{len(issues)+1}"
-                ),
+                issue_id=f"PDF_BATCH_{idx+1}",
 
                 exception_type=(
                     "PDF Comparison Blocked"
                 ),
 
-                fund_id=row.get(
-                    "fund_id"
+                fund_id=(
+                    row.get("fund_id")
+                ),
+
+                as_at_date=(
+                    row.get("as_at_date")
                 ),
 
                 description=(
-                    "PDF cannot be automatically "
-                    "compared against holdings data"
+                    "PDF cannot be used for automated comparison"
                 ),
 
                 issue_detail=(
                     row.get(
-                        "blocked_reason"
+                        "reason",
+                        "Batch validation failed"
                     )
                 ),
 
                 evidence_available=(
-                    "Batch validation result available"
+                    "PDF validation batch result available"
+                ),
+
+                pdf_source=(
+                    row.get("pdf_path")
+                    or row.get("source")
                 ),
 
                 diagnosis=(
-                    "Automated comparison was blocked "
-                    "because required validation "
-                    "conditions were not satisfied."
+                    "Comparison blocked because "
+                    "required PDF information was unavailable."
                 ),
 
                 recommended_action=(
-                    "Resolve Extraction — "
-                    "Review PDF/source report"
+                    ACTIONS["resolve_extraction"]
                 ),
             )
         )

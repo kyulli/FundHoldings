@@ -3,67 +3,53 @@ Generate business-facing diagnosis explanations.
 """
 
 from typing import List
-
 from .models import ExceptionIssue
 
 
-def diagnose_issue(issue: ExceptionIssue) -> ExceptionIssue:
+def diagnose_issue(
+    issue: ExceptionIssue
+) -> ExceptionIssue:
+
     """
-    Add diagnosis explanation based on exception type.
+    Add Office-facing diagnosis explanation
+    based on exception type.
     """
 
     if issue.exception_type == "Missing Field":
 
         issue.diagnosis = (
-            "Cause cannot be determined without source evidence. "
-            "The missing value may reflect either non-disclosure "
-            "or an extraction gap."
+            "Missing information requires source report "
+            "verification. The issue may be caused by "
+            "unavailable disclosure or incomplete extraction."
         )
 
-    elif issue.exception_type == "Deal Status Inconsistency":
+    elif issue.exception_type == "Deal Status Mismatch":
 
-        # Special Written Off case
-        if (
-            issue.issue_detail
-            and "Realized Proceeds is negative"
-            in issue.issue_detail
-        ):
-
-            issue.diagnosis = (
-                "Current classification rule treats non-zero "
-                "Realized Proceeds as Fully Exited, while "
-                "vendor classification treats the investment "
-                "as Written Off. Business definition confirmation "
-                "is required."
-            )
-
-        else:
-
-            issue.diagnosis = (
-                "Reported Deal Status differs from "
-                "financial-value-based classification. "
-                "Source confirmation is required."
-            )
+        issue.diagnosis = (
+            "Reported Deal Status does not match "
+            "financial-value-based classification. "
+            "Source confirmation is required."
+        )
 
     elif issue.exception_type == "Entity Mapping Review":
 
         issue.diagnosis = (
-            "Entity mapping between PDF extracted company "
-            "name and structured holdings data is not confirmed."
+            "Entity identity between source documents "
+            "and structured holdings data is not confirmed."
         )
 
-    elif issue.exception_type == "PDF / Vendor Value Difference":
+    elif issue.exception_type == "PDF / Vendor Value Mismatch":
 
         issue.diagnosis = (
-            "PDF extracted value differs from structured "
+            "PDF reported value differs from structured "
             "holdings data. Source verification is required."
         )
 
     elif issue.exception_type == "PDF Comparison Blocked":
 
         issue.diagnosis = (
-            "PDF validation checks prevented automated "
-            "comparison. Extraction or document review is required."
+            "Automated PDF comparison could not be completed. "
+            "Document review or extraction resolution is required."
         )
 
     else:
@@ -72,13 +58,16 @@ def diagnose_issue(issue: ExceptionIssue) -> ExceptionIssue:
             "Exception requires further review."
         )
 
-
     return issue
 
 
 def diagnose_all(
     issues: List[ExceptionIssue]
 ) -> List[ExceptionIssue]:
+
+    """
+    Add diagnosis explanations to all issues.
+    """
 
     return [
         diagnose_issue(issue)
