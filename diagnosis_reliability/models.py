@@ -1,5 +1,13 @@
 """
-Data models for Office-facing Exception Review Queue.
+Data models for Office-facing exception review.
+
+The model stores:
+- what happened
+- available evidence
+- diagnosis
+- recommended action
+
+It does not calculate validation results.
 """
 
 from dataclasses import dataclass, asdict
@@ -9,10 +17,11 @@ from typing import Any
 @dataclass
 class ExceptionIssue:
     """
-    A single exception record produced from validation outputs.
+    A single exception generated from upstream validation outputs.
     """
 
     # Identification
+
     issue_id: str
 
     exception_type: str
@@ -26,23 +35,27 @@ class ExceptionIssue:
     as_at_date: str | None = None
 
 
-    # Issue Description
+    # Office-facing explanation
+
     description: str | None = None
 
     issue_detail: str | None = None
 
-
-    # Evidence
     evidence_available: str | None = None
 
+    diagnosis: str | None = None
 
-    # Original values
+    recommended_action: str | None = None
+
+    recommended_guidance: str | None = None
+
+
+    # Structured data evidence
+
     reported_value: Any = None
 
     derived_value: Any = None
 
-
-    # Financial evidence
     current_cost: float | None = None
 
     unrealized_value: float | None = None
@@ -50,39 +63,35 @@ class ExceptionIssue:
     realized_proceeds: float | None = None
 
 
-    # PDF / Vendor comparison
+    # PDF validation evidence
+
     pdf_value: Any = None
 
     vendor_value: Any = None
 
     difference: float | None = None
 
-
-    # PDF evidence
     pdf_page: int | None = None
 
     pdf_source: str | None = None
 
-    extraction_quality: str | None = None
 
-    mapping_status: str | None = None
+    # Entity resolution evidence
 
-    comparability_status: str | None = None
+    canonical_entity: str | None = None
 
+    entity_resolution_status: str | None = None
 
-    # Diagnosis Output
-    diagnosis: str | None = None
-
-    recommended_action: str | None = None
+    entity_resolution_reason: str | None = None
 
 
-    # Review Metadata
+    # Review tracking
+
     review_required: bool = True
-
 
     def to_dict(self) -> dict:
         """
-        Convert issue to dictionary for dataframe/export.
+        Convert issue object into dictionary for export.
         """
 
         return asdict(self)

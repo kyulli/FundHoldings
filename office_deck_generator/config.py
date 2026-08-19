@@ -29,7 +29,7 @@ DIAGNOSIS_DIR = (
 DIAGNOSIS_OUTPUT = (
     DIAGNOSIS_DIR
     / "outputs"
-    / "diagnosis_reliability_report.xlsx"
+    / "diagnosis_report.xlsx"
 )
 
 OUTPUT_DIR = (
@@ -68,9 +68,24 @@ PIPELINE_SUMMARY_METRICS = [
     "PDF mismatches found this run",
 ]
 
-DIAGNOSIS_OVERVIEW_METRICS = [
-    "Issues Evaluated",
-    "Specific Root Cause Assigned",
-    "Root Cause Unresolved",
-    "Verify Deal Status Against Source",
-]
+# Entity resolution
+ENTITY_RESOLUTION_DIR = (
+    REPO_ROOT / "entity_resolution"
+)
+
+# Diagnosis report sheets
+DIAGNOSIS_EXCEPTION_SUMMARY_SHEET = (
+    "Exception Summary"
+)
+
+DIAGNOSIS_ACTION_SUMMARY_SHEET = (
+    "Action Summary"
+)
+
+DIAGNOSIS_IMPACT_SUMMARY_SHEET = (
+    "Impact Summary"
+)
+
+DIAGNOSIS_DETAIL_SHEET = (
+    "Exception Detail"
+)

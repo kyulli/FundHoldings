@@ -3,17 +3,18 @@ Export Office-facing diagnosis reports.
 """
 
 from pathlib import Path
-
 import pandas as pd
+from .config import DIAGNOSIS_OUTPUT_DIR
 
-from .config import OUTPUT_DIR
 from .summary import (
     build_exception_summary,
+    build_action_summary,
     build_impact_summary,
 )
 
 
 def issues_to_dataframe(issues):
+
     """
     Convert ExceptionIssue objects
     into detail dataframe.
@@ -28,21 +29,26 @@ def issues_to_dataframe(issues):
 
 
 def export_diagnosis_report(issues):
+
     """
     Export Excel workbook for Office review.
     """
 
-    OUTPUT_DIR.mkdir(
+    DIAGNOSIS_OUTPUT_DIR.mkdir(
         parents=True,
         exist_ok=True
     )
 
     output_file = (
-        OUTPUT_DIR
+        DIAGNOSIS_OUTPUT_DIR
         / "diagnosis_report.xlsx"
     )
 
-    summary_df = build_exception_summary(
+    exception_df = build_exception_summary(
+        issues
+    )
+
+    action_df = build_action_summary(
         issues
     )
 
@@ -59,9 +65,15 @@ def export_diagnosis_report(issues):
         engine="openpyxl"
     ) as writer:
 
-        summary_df.to_excel(
+        exception_df.to_excel(
             writer,
             sheet_name="Exception Summary",
+            index=False,
+        )
+
+        action_df.to_excel(
+            writer,
+            sheet_name="Action Summary",
             index=False,
         )
 

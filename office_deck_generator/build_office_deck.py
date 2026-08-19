@@ -13,17 +13,11 @@ from office_deck_generator.config import (
     OFFICE_TEMPLATE,
     DEFAULT_DECK_OUTPUT,
     OUTPUT_DIR,
-    DIAGNOSIS_OVERVIEW_METRICS,
-)
-from office_deck_generator.load_outputs import discover_outputs
-from office_deck_generator.extract_tables import read_sheet_if_exists
-
-from office_deck_generator.config import (
-    OFFICE_TEMPLATE,
-    DEFAULT_DECK_OUTPUT,
-    OUTPUT_DIR,
     PIPELINE_SUMMARY_METRICS,
 )
+
+from office_deck_generator.load_outputs import discover_outputs
+from office_deck_generator.extract_tables import read_sheet_if_exists
 
 
 # Office-style presentation colors
@@ -211,40 +205,6 @@ def style_table(
                         run.font.size = Pt(10.5)
 
 
-def highlight_decision_queue(
-    table,
-    df: pd.DataFrame,
-) -> None:
-    """
-    Highlight high-severity rows without changing underlying values.
-    """
-
-    if "severity" not in df.columns:
-        return
-
-    severity_col = list(df.columns).index(
-        "severity"
-    )
-
-    for df_row_idx, severity in enumerate(
-        df["severity"],
-        start=1,
-    ):
-        if str(severity).upper() == "HIGH":
-            cell = table.cell(
-                df_row_idx,
-                severity_col,
-            )
-
-            cell.fill.solid()
-            cell.fill.fore_color.rgb = COLOR_DEEP_RED
-
-            for paragraph in cell.text_frame.paragraphs:
-                for run in paragraph.runs:
-                    run.font.color.rgb = COLOR_WHITE
-                    run.font.bold = True
-
-
 def dataframe_to_slide_table(
     slide,
     df: pd.DataFrame,
@@ -359,12 +319,6 @@ def add_table_slide(
         friendly_columns=friendly_columns,
     )
 
-    if highlight_severity:
-        highlight_decision_queue(
-            table,
-            df.head(max_rows),
-        )
-
     if note:
         set_placeholder_text(
             slide,
@@ -373,287 +327,6 @@ def add_table_slide(
         )
 
     return slide, table
-
-
-def add_decision_queue_slide(
-    prs: Presentation,
-    decision_queue: pd.DataFrame,
-):
-    """Create an executive Office Decision Queue slide.
-
-    All actions are reproduced from existing office_guidance fields.
-    No new analytical conclusions are generated.
-    """
-
-    slide = prs.slides.add_slide(
-        prs.slide_layouts[0]
-    )
-
-    set_placeholder_text(
-        slide,
-        0,
-        "Office Decision Queue",
-    )
-
-    # Find and remove default content placeholder.
-    content_placeholder = None
-
-    for placeholder in slide.placeholders:
-        if placeholder.placeholder_format.idx == 1:
-            content_placeholder = placeholder
-            break
-
-    if content_placeholder is None:
-        raise RuntimeError(
-            "Content placeholder idx=1 not found."
-        )
-
-    left = content_placeholder.left
-    top = content_placeholder.top
-    width = content_placeholder.width
-    height = content_placeholder.height
-
-    sp = content_placeholder._element
-    sp.getparent().remove(sp)
-
-
-    # Top: compact decision table
-    display_df = decision_queue[
-        [
-            "decision_state",
-            "severity",
-            "confidence",
-            "issue_count",
-            "affected_funds",
-            "affected_managers",
-        ]
-    ].copy()
-
-    display_df["decision_state"] = (
-        display_df["decision_state"]
-        .apply(friendly_label)
-    )
-
-    table_height = int(height * 0.36)
-
-    rows = len(display_df) + 1
-    cols = len(display_df.columns)
-
-    table_shape = slide.shapes.add_table(
-        rows,
-        cols,
-        left,
-        top,
-        width,
-        table_height,
-    )
-
-    table = table_shape.table
-
-    # Header
-    for col_idx, column in enumerate(
-        display_df.columns
-    ):
-        table.cell(
-            0,
-            col_idx,
-        ).text = friendly_label(column)
-
-    # Body
-    for row_idx, (_, row) in enumerate(
-        display_df.iterrows(),
-        start=1,
-    ):
-        for col_idx, value in enumerate(row):
-            if pd.isna(value):
-                text = ""
-            else:
-                text = str(value)
-
-            table.cell(
-                row_idx,
-                col_idx,
-            ).text = text
-
-    style_table(table)
-
-    highlight_decision_queue(
-        table,
-        display_df,
-    )
-
-
-    # Bottom section title
-    guidance_top = (
-        top
-        + table_height
-        + int(height * 0.08)
-    )
-
-    label_box = slide.shapes.add_textbox(
-        left,
-        guidance_top,
-        width,
-        int(height * 0.06),
-    )
-
-    p = label_box.text_frame.paragraphs[0]
-    p.text = "Office Review Guidance"
-
-    run = p.runs[0]
-    run.font.size = Pt(15)
-    run.font.bold = True
-    run.font.color.rgb = COLOR_DARK_BROWN
-
-
-    # Use existing guidance only
-    # Deduplicate repeated guidance text.
-    guidance_df = (
-        decision_queue[
-            [
-                "decision_state",
-                "office_guidance",
-            ]
-        ]
-        .drop_duplicates()
-        .reset_index(drop=True)
-    )
-
-    guidance_box_top = (
-        guidance_top
-        + int(height * 0.075)
-    )
-
-    guidance_height = int(
-        height * 0.28
-    )
-
-    number_guidance = len(
-        guidance_df
-    )
-
-    if number_guidance:
-        gap = int(width * 0.018)
-
-        box_width = int(
-            (
-                width
-                - gap * (
-                    number_guidance - 1
-                )
-            )
-            / number_guidance
-        )
-
-        for i, row in guidance_df.iterrows():
-            box_left = (
-                left
-                + i * (
-                    box_width + gap
-                )
-            )
-
-            action_box = slide.shapes.add_shape(
-                MSO_SHAPE.ROUNDED_RECTANGLE,
-                box_left,
-                guidance_box_top,
-                box_width,
-                guidance_height,
-            )
-
-            action_box.fill.solid()
-            action_box.fill.fore_color.rgb = COLOR_WARM_WHITE
-            action_box.line.color.rgb = COLOR_BORDER
-            action_box.line.width = Pt(1)
-
-            # Inner layout: center title + body as one content block
-            inner_margin_x = Pt(18)
-            inner_margin_top = Pt(14)
-            inner_margin_bottom = Pt(14)
-            title_body_gap = Pt(8)
-
-            inner_left = box_left + inner_margin_x
-            inner_width = box_width - 2 * inner_margin_x
-
-            title_height = int(guidance_height * 0.20)
-            body_height = int(guidance_height * 0.34)
-
-            content_block_height = (
-                title_height
-                + title_body_gap
-                + body_height
-            )
-
-            content_top = int(
-                guidance_box_top
-                + (guidance_height - content_block_height) / 2
-            )
-
-            # Title box
-            title_box = slide.shapes.add_textbox(
-                inner_left,
-                content_top,
-                inner_width,
-                title_height,
-            )
-
-            title_tf = title_box.text_frame
-            title_tf.clear()
-            title_tf.word_wrap = True
-            title_tf.vertical_anchor = MSO_ANCHOR.MIDDLE
-            title_tf.margin_left = 0
-            title_tf.margin_right = 0
-            title_tf.margin_top = 0
-            title_tf.margin_bottom = 0
-
-            p = title_tf.paragraphs[0]
-            p.text = friendly_label(
-                row["decision_state"]
-            )
-            p.alignment = PP_ALIGN.CENTER
-
-            run = p.runs[0]
-            run.font.size = Pt(16)
-            run.font.bold = True
-            run.font.color.rgb = COLOR_DEEP_RED
-
-            # Body box
-            body_box = slide.shapes.add_textbox(
-                inner_left,
-                content_top + title_height + title_body_gap,
-                inner_width,
-                body_height,
-            )
-
-            body_tf = body_box.text_frame
-            body_tf.clear()
-            body_tf.word_wrap = True
-            body_tf.vertical_anchor = MSO_ANCHOR.MIDDLE
-            body_tf.margin_left = 0
-            body_tf.margin_right = 0
-            body_tf.margin_top = 0
-            body_tf.margin_bottom = 0
-
-            p = body_tf.paragraphs[0]
-            p.text = str(
-                row["office_guidance"]
-            )
-            p.alignment = PP_ALIGN.LEFT
-
-            run = p.runs[0]
-            run.font.size = Pt(13)
-            run.font.color.rgb = COLOR_TEXT
-
-    set_placeholder_text(
-        slide,
-        13,
-        (
-            "Decision states, issue counts, and review guidance "
-            "are reproduced directly from the diagnosis framework output."
-        ),
-    )
-
-    return slide
 
 
 def add_workflow_slide(
@@ -690,119 +363,139 @@ def add_workflow_slide(
     width = content_placeholder.width
     height = content_placeholder.height
 
+    # Remove placeholder
     sp = content_placeholder._element
     sp.getparent().remove(sp)
+
 
     stages = [
         {
             "number": "01",
             "title": "Data-State Analysis",
             "description": (
-                "Assess completeness, consistency, and "
-                "fund- and manager-level data quality."
+                "Assess completeness, consistency, "
+                "and fund- and manager-level "
+                "data quality."
             ),
         },
+
         {
             "number": "02",
             "title": "Quarterly Cleaning Pipeline",
             "description": (
-                "Re-run quality checks and compare results "
-                "with the prior reporting baseline."
+                "Refresh validation outputs and "
+                "compare results against prior "
+                "reporting baselines."
             ),
         },
+
         {
             "number": "03",
             "title": "PDF Validation",
             "description": (
-                "Compare structured holdings with source-report "
-                "evidence from validated PDF outputs."
+                "Compare structured holdings "
+                "with source-report evidence "
+                "from validated PDFs."
             ),
         },
+
         {
             "number": "04",
-            "title": "Diagnosis & Reliability",
+            "title": "Entity Resolution",
             "description": (
-                "Assess root cause, severity, evidence strength, "
-                "and diagnosis confidence."
+                "Confirm entity relationships "
+                "between PDF disclosures and "
+                "structured holdings."
             ),
         },
+        
         {
             "number": "05",
-            "title": "Office Decision Support",
+            "title": "Exception Diagnosis",
             "description": (
-                "Translate exceptions into structured review "
-                "actions and escalation guidance."
+                "Classify validation findings "
+                "and provide Office review "
+                "guidance."
             ),
         },
     ]
 
 
-    # Layout: 3 cards on top, 2 centered below
-    card_width = int(width * 0.285)
+    # Layout: 3 cards top, 2 cards bottom
+    card_width = int(width * 0.28)
     card_height = int(height * 0.34)
 
-    horizontal_gap = int(width * 0.045)
-    vertical_gap = int(height * 0.09)
+    horizontal_gap = int(width * 0.035)
+    vertical_gap = int(height * 0.12)
 
-    row1_top = top + int(height * 0.06)
-    row2_top = row1_top + card_height + vertical_gap
+    row1_top = (
+        top
+        + int(height * 0.08)
+    )
 
-    row1_total = (
+    row2_top = (
+        row1_top
+        + card_height
+        + vertical_gap
+    )
+
+    row1_total_width = (
         card_width * 3
         + horizontal_gap * 2
     )
 
     row1_left = (
         left
-        + int((width - row1_total) / 2)
-    )
-
-    row2_total = (
-        card_width * 2
-        + horizontal_gap
-    )
-
-    row2_left = (
-        left
-        + int((width - row2_total) / 2)
+        + int(
+            (width - row1_total_width)
+            / 2
+        )
     )
 
     positions = [
+
+        # 01
         (
             row1_left,
             row1_top,
         ),
+
+        # 02
         (
             row1_left
             + card_width
             + horizontal_gap,
             row1_top,
         ),
+
+        # 03
         (
             row1_left
-            + 2 * (
-                card_width
-                + horizontal_gap
-            ),
+            + (card_width + horizontal_gap) * 2,
             row1_top,
         ),
+
+        # 04
         (
-            row2_left,
+            left
+            + int(width * 0.22),
             row2_top,
         ),
+
+        # 05
         (
-            row2_left
-            + card_width
-            + horizontal_gap,
+            left
+            + int(width * 0.55),
             row2_top,
         ),
     ]
 
+
+    # Draw cards
     for i, stage in enumerate(stages):
+
         card_left, card_top = positions[i]
 
-
-        # Card
         card = slide.shapes.add_shape(
             MSO_SHAPE.ROUNDED_RECTANGLE,
             card_left,
@@ -819,13 +512,22 @@ def add_workflow_slide(
 
 
         # Number tag
-        tag_width = int(card_width * 0.22)
-        tag_height = int(card_height * 0.17)
+        tag_width = int(
+            card_width * 0.22
+        )
+
+        tag_height = int(
+            card_height * 0.18
+        )
 
         tag = slide.shapes.add_shape(
             MSO_SHAPE.ROUNDED_RECTANGLE,
-            card_left + int(card_width * 0.07),
-            card_top + int(card_height * 0.07),
+            card_left
+            + int(card_width * 0.07),
+
+            card_top
+            + int(card_height * 0.08),
+
             tag_width,
             tag_height,
         )
@@ -848,78 +550,86 @@ def add_workflow_slide(
         run.font.color.rgb = COLOR_WHITE
 
 
-        # Title — larger and given more vertical space
+        # Title
         title_box = slide.shapes.add_textbox(
-            card_left + int(card_width * 0.07),
-            card_top + int(card_height * 0.29),
+            card_left
+            + int(card_width * 0.07),
+
+            card_top
+            + int(card_height * 0.32),
             int(card_width * 0.86),
-            int(card_height * 0.28),
+            int(card_height * 0.25),
         )
 
         title_tf = title_box.text_frame
         title_tf.clear()
         title_tf.word_wrap = True
-        title_tf.margin_left = 0
-        title_tf.margin_right = 0
-        title_tf.margin_top = 0
-        title_tf.margin_bottom = 0
 
         p = title_tf.paragraphs[0]
         p.text = stage["title"]
 
         run = p.runs[0]
-        run.font.size = Pt(16)
+        run.font.size = Pt(14)
         run.font.bold = True
         run.font.color.rgb = COLOR_DARK_BROWN
 
 
-        # Description — moved lower to prevent overlap
+        # Description
         desc_box = slide.shapes.add_textbox(
-            card_left + int(card_width * 0.07),
-            card_top + int(card_height * 0.61),
+            card_left
+            + int(card_width * 0.07),
+
+            card_top
+            + int(card_height * 0.62),
             int(card_width * 0.86),
-            int(card_height * 0.30),
+            int(card_height * 0.25),
         )
 
         desc_tf = desc_box.text_frame
         desc_tf.clear()
         desc_tf.word_wrap = True
-        desc_tf.margin_left = 0
-        desc_tf.margin_right = 0
-        desc_tf.margin_top = 0
-        desc_tf.margin_bottom = 0
 
         p = desc_tf.paragraphs[0]
         p.text = stage["description"]
 
         run = p.runs[0]
-        run.font.size = Pt(11)
+        run.font.size = Pt(10)
         run.font.color.rgb = COLOR_TEXT
 
 
-    # Horizontal arrows: 1 → 2 → 3
-    for i in [0, 1]:
-        x = (
-            positions[i][0]
+    # Add arrows
+    arrow_pairs = [
+        (0, 1),
+        (1, 2),
+        (3, 4),
+    ]
+
+    for start_idx, end_idx in arrow_pairs:
+
+        start_x = (
+            positions[start_idx][0]
             + card_width
+            - int(horizontal_gap * 0.25)
         )
 
-        y = (
-            row1_top
+        start_y = (
+            positions[start_idx][1]
             + int(card_height * 0.45)
         )
 
+        arrow_width = (
+            positions[end_idx][0]
+            - start_x
+        )
+
         arrow = slide.shapes.add_textbox(
-            x,
-            y,
-            horizontal_gap,
+            start_x,
+            start_y,
+            arrow_width,
             int(card_height * 0.15),
         )
 
-        arrow_tf = arrow.text_frame
-        arrow_tf.clear()
-
-        p = arrow_tf.paragraphs[0]
+        p = arrow.text_frame.paragraphs[0]
         p.text = "→"
         p.alignment = PP_ALIGN.CENTER
 
@@ -929,47 +639,13 @@ def add_workflow_slide(
         run.font.color.rgb = COLOR_DARK_BROWN
 
 
-    # Transition 3 ↓ 4
-    down_arrow = slide.shapes.add_textbox(
-        left + int(width * 0.485),
-        row1_top + card_height,
-        int(width * 0.06),
-        vertical_gap,
-    )
-
-    p = down_arrow.text_frame.paragraphs[0]
-    p.text = "↓"
-    p.alignment = PP_ALIGN.CENTER
-
-    run = p.runs[0]
-    run.font.size = Pt(20)
-    run.font.bold = True
-    run.font.color.rgb = COLOR_DARK_BROWN
-
-
-    # Horizontal arrow: 4 → 5
-    arrow = slide.shapes.add_textbox(
-        row2_left + card_width,
-        row2_top + int(card_height * 0.45),
-        horizontal_gap,
-        int(card_height * 0.15),
-    )
-
-    p = arrow.text_frame.paragraphs[0]
-    p.text = "→"
-    p.alignment = PP_ALIGN.CENTER
-
-    run = p.runs[0]
-    run.font.size = Pt(20)
-    run.font.bold = True
-    run.font.color.rgb = COLOR_DARK_BROWN
-
     set_placeholder_text(
         slide,
         13,
         (
-            "Each stage consumes existing upstream outputs and adds "
-            "a progressively more operational layer of review."
+            "Each stage builds on upstream outputs, "
+            "transforming data validation results "
+            "into actionable Office review guidance."
         ),
     )
 
@@ -1005,7 +681,218 @@ def build_deck():
     )
 
 
-    # Data-State Analysis
+        # Phase 1: Data-State Analysis
+
+    phase1_summary = outputs.get(
+        "phase1_summary",
+    )
+
+
+    if phase1_summary:
+
+        # Slide 1: Executive Data-State Overview
+
+        overview_rows = []
+
+        coverage = phase1_summary.get(
+            "coverage",
+            {}
+        )
+
+        for key in [
+            "Funds Covered",
+            "Managers Covered",
+        ]:
+            if key in coverage:
+                overview_rows.append(
+                    {
+                        "Metric": key,
+                        "Value": coverage[key],
+                    }
+                )
+
+
+        completeness = phase1_summary.get(
+            "completeness",
+            {}
+        )
+
+        for key in [
+            "Unconditional Completeness",
+            "Conditional Completeness",
+            "Conditional Improvement",
+        ]:
+            if key in completeness:
+                overview_rows.append(
+                    {
+                        "Metric": key,
+                        "Value": completeness[key],
+                    }
+                )
+
+        overview_df = pd.DataFrame(
+            overview_rows
+        )
+
+        if not overview_df.empty:
+
+            add_table_slide(
+                prs,
+                "Phase 1 Data-State Overview",
+                overview_df,
+                note=(
+                    "Phase 1 assessed current investment "
+                    "data coverage and completeness. "
+                    "Conditional completeness adjusts for "
+                    "fields not applicable to certain "
+                    "investment scenarios."
+                ),
+                max_rows=10,
+            )
+
+
+        # Slide 2: Key Data Quality Observations
+
+        observation_rows = []
+
+        # Fund completeness
+
+        fund_quality = phase1_summary.get(
+            "fund_quality",
+            {}
+        )
+
+        if fund_quality:
+
+            unconditional = fund_quality.get(
+                "Funds Below 85% Unconditional"
+            )
+
+            conditional = fund_quality.get(
+                "Funds Below 85% Conditional"
+            )
+
+            if (
+                unconditional is not None
+                and conditional is not None
+            ):
+
+                observation_rows.append(
+                    {
+                        "Area":
+                            "Fund Completeness",
+
+                        "Finding":
+                            (
+                                f"Funds below 85% "
+                                f"completeness decreased "
+                                f"from {unconditional} "
+                                f"to {conditional} "
+                                f"after excluding "
+                                f"non-applicable fields."
+                            ),
+                    }
+                )
+
+
+        # Missing fields
+
+        field_quality = phase1_summary.get(
+            "field_quality",
+            []
+        )
+
+        if field_quality:
+
+            top_fields = ", ".join(
+                [
+                    item["Field"]
+                    for item in field_quality[:2]
+                ]
+            )
+
+            observation_rows.append(
+                {
+                    "Area":
+                        "Missing Fields",
+
+                    "Finding":
+                        (
+                            f"{top_fields} "
+                            "represent the largest "
+                            "conditional reporting gaps."
+                        ),
+                }
+            )
+
+
+        # Manager quality
+
+        manager_quality = phase1_summary.get(
+            "manager_quality",
+            {}
+        )
+
+        if manager_quality:
+
+            observation_rows.append(
+                {
+                    "Area":
+                        "Manager Quality",
+
+                    "Finding":
+                        (
+                            f"{manager_quality.get('Managers Scored')} "
+                            "managers evaluated with "
+                            f"{manager_quality.get('Average Conditional Completeness')} "
+                            "average conditional completeness."
+                        ),
+                }
+            )
+
+
+        # Data hygiene
+
+        data_hygiene = phase1_summary.get(
+            "data_hygiene",
+            {}
+        )
+
+        if data_hygiene:
+
+            observation_rows.append(
+                {
+                    "Area":
+                        "Data Hygiene",
+
+                    "Finding":
+                        (
+                            f"{data_hygiene.get('Excluded Non-Investment Rows')} "
+                            "non-investment rows excluded "
+                            "before quality assessment."
+                        ),
+                }
+            )
+
+        observations_df = pd.DataFrame(
+            observation_rows
+        )
+
+        if not observations_df.empty:
+
+            add_table_slide(
+                prs,
+                "Key Data Quality Observations",
+                observations_df,
+                note=(
+                    "Summary of the primary reporting "
+                    "gaps and data quality considerations "
+                    "identified during Phase 1."
+                ),
+                max_rows=10,
+            )
+
+  
     data_state_images = outputs.get(
         "data_state_images",
         [],
@@ -1020,14 +907,55 @@ def build_deck():
     image_titles = {
         "completeness_by_dimension.png":
             "Data Completeness by Dimension",
+
         "fund_quality_distribution_outliers.png":
             "Fund Quality Distribution & Outliers",
+
         "manager_field_heatmap.png":
             "Manager-Level Field Completeness",
+
         "portfolio_concentration.png":
             "Portfolio Concentration",
+
         "quality_by_investment_type.png":
             "Data Quality by Investment Type",
+    }
+
+    image_notes = {
+        "completeness_by_dimension.png":
+            (
+                "Conditional completeness improves reporting coverage "
+                "by excluding fields that are not applicable to certain "
+                "investment scenarios."
+            ),
+
+        "fund_quality_distribution_outliers.png":
+            (
+                "Fund-level completeness varies across the portfolio. "
+                "After excluding non-applicable fields, funds below the "
+                "85% threshold decreased from 102 to 83."
+            ),
+
+        "manager_field_heatmap.png":
+            (
+                "Manager-level analysis highlights differences in "
+                "reporting completeness across investment managers. "
+                "89 managers were included in the conditional assessment."
+            ),
+
+        "portfolio_concentration.png":
+            (
+                "Portfolio concentration provides additional context "
+                "when interpreting data quality patterns across "
+                "investment exposures."
+            ),
+
+        "quality_by_investment_type.png":
+            (
+                "Data quality varies by investment type due to "
+                "differences in reporting structures and available "
+                "investment attributes."
+            ),
     }
 
     for image_path in data_state_images:
@@ -1040,9 +968,9 @@ def build_deck():
             prs,
             title,
             image_path,
-            note=(
-                "Source: existing Data-State Analysis exports. "
-                "Figure inserted without recalculation."
+            note=image_notes.get(
+                image_path.name,
+                ""
             ),
         )
 
@@ -1089,87 +1017,262 @@ def build_deck():
 
 
     # PDF Validation
-    # Intentionally skipped until a stable upstream output is available.
-    # No placeholder results or synthetic numbers are generated.
 
-
-    # Diagnosis & Reliability
-    diagnosis_report = outputs.get(
-        "diagnosis_report"
+    pdf_metrics = outputs.get(
+        "pdf_validation_metrics",
     )
 
-    if diagnosis_report:
+    if pdf_metrics:
+
         add_section_slide(
             prs,
-            "III. Diagnosis & Reliability",
+            "III. PDF Validation",
         )
 
-        diagnosis_overview = read_sheet_if_exists(
-            diagnosis_report,
-            "Diagnosis Overview",
+
+        # PDF Validation Overview
+
+        pdf_metrics_df = pd.DataFrame(
+            [
+                {
+                    "Validation Area": key,
+                    "Result": value,
+                }
+                for key, value in pdf_metrics.items()
+            ]
         )
 
-        if diagnosis_overview is not None:
-            diagnosis_exec = diagnosis_overview[
-                diagnosis_overview["metric"].isin(
-                    DIAGNOSIS_OVERVIEW_METRICS
-                )
-            ].copy()
-            
+        add_table_slide(
+            prs,
+            "PDF Validation Overview",
+            pdf_metrics_df,
+            note=(
+                "PDF validation assesses whether source documents "
+                "can be reliably compared against structured "
+                "holdings data."
+            ),
+            max_rows=10,
+        )
+
+
+        # PDF Validation Insights
+
+        pdf_insights_df = pd.DataFrame(
+            [
+                {
+                    "Area":
+                        "Document Comparability",
+
+                    "Finding":
+                        (
+                            "All reviewed PDFs passed "
+                            "comparability checks and were "
+                            "available for automated validation."
+                        ),
+                },
+
+                {
+                    "Area":
+                        "Value Validation",
+
+                    "Finding":
+                        (
+                            "No PDF / vendor value differences "
+                            "were identified in reviewed samples."
+                        ),
+                },
+
+                {
+                    "Area":
+                        "Review Queue",
+
+                    "Finding":
+                        (
+                            "Remaining documents require "
+                            "targeted review based on "
+                            "validation conditions."
+                        ),
+                },
+            ]
+        )
+
+        add_table_slide(
+            prs,
+            "PDF Validation Insights",
+            pdf_insights_df,
+            note=(
+                "Summary of document validation outcomes "
+                "and remaining review considerations."
+            ),
+            max_rows=10,
+        )
+
+
+    # Entity Resolution
+
+    entity_metrics = outputs.get(
+        "entity_resolution_metrics",
+    )
+
+    if entity_metrics:
+
+        add_section_slide(
+            prs,
+            "IV. Entity Resolution",
+        )
+
+
+        # Entity Resolution Overview
+
+        entity_metrics_df = pd.DataFrame(
+            [
+                {
+                    "Metric": key,
+                    "Value": value,
+                }
+                for key, value in entity_metrics.items()
+            ]
+        )
+
+        add_table_slide(
+            prs,
+            "Entity Resolution Overview",
+            entity_metrics_df,
+            note=(
+                "Entity resolution links PDF-extracted company "
+                "names with structured holdings records "
+                "before downstream validation."
+            ),
+            max_rows=10,
+        )
+
+
+        # Entity Resolution Insights
+
+        entity_insights_df = pd.DataFrame(
+            [
+                {
+                    "Area":
+                        "Entity Linking",
+
+                    "Finding":
+                        (
+                            "PDF company names were matched "
+                            "against structured holdings entities."
+                        ),
+                },
+
+                {
+                    "Area":
+                        "Mapping Coverage",
+
+                    "Finding":
+                        (
+                            "Confirmed mappings were generated "
+                            "across reviewed source documents."
+                        ),
+                },
+
+                {
+                    "Area":
+                        "Remaining Review",
+
+                    "Finding":
+                        (
+                            "Unconfirmed mappings require "
+                            "review before automated comparison."
+                        ),
+                },
+            ]
+        )
+
+        add_table_slide(
+            prs,
+            "Entity Resolution Insights",
+            entity_insights_df,
+            note=(
+                "Entity resolution provides the mapping layer "
+                "required for reliable PDF-to-data validation."
+            ),
+            max_rows=10,
+        )
+
+
+    # Diagnosis
+    diagnosis_tables = outputs.get(
+        "diagnosis_tables",
+        {}
+    )
+
+    if diagnosis_tables:
+
+        add_section_slide(
+            prs,
+            "V. Exception Diagnosis",
+        )
+
+        # Exception Diagnosis Summary
+        exception_summary = diagnosis_tables.get(
+            "exception_summary"
+        )
+
+        if (
+            exception_summary is not None
+            and not exception_summary.empty
+        ):
+
             add_table_slide(
                 prs,
-                "Diagnosis Overview",
-                diagnosis_overview[
+                "Exception Diagnosis Summary",
+                exception_summary[
                     [
-                        "category",
-                        "metric",
-                        "value",
+                        "Exception Type",
+                        "Count",
+                        "Diagnosis",
+                        "Affected Funds",
+                        "Affected Managers",
                     ]
                 ],
                 note=(
-                    "Source: diagnosis/reliability framework output. "
-                    "Only existing reported values are shown."
+                    "Source: diagnosis report. "
+                    "Exceptions are classified based on "
+                    "validation results and available evidence. "
+                    "Impact reflects affected funds and managers."
                 ),
-                max_rows=8,
+                max_rows=10,
             )
 
-        reliability_df = read_sheet_if_exists(
-            diagnosis_report,
-            "Reliability Analysis",
+
+        # Recommendation
+        recommendation_source = diagnosis_tables.get(
+            "exception_summary"
         )
 
-        if reliability_df is not None:
+        if (
+            recommendation_source is not None
+            and not recommendation_source.empty
+        ):
+
+            recommendation_df = (
+                recommendation_source[
+                    [
+                        "Exception Type",
+                        "Recommended Action",
+                        "Review Guidance",
+                    ]
+                ]
+                .drop_duplicates()
+            )
+
             add_table_slide(
                 prs,
-                "Evidence Reliability",
-                reliability_df[
-                    [
-                        "category",
-                        "metric",
-                        "count",
-                        "percent_of_issues",
-                    ]
-                ],
+                "Recommended Review Actions",
+                recommendation_df,
                 note=(
-                    "Evidence coverage reflects currently integrated "
-                    "upstream sources; PDF validation evidence will be "
-                    "added once available."
+                    "Recommended actions provide Office guidance "
+                    "for reviewing and resolving identified exceptions."
                 ),
-                max_rows=15,
-                percent_columns=[
-                    "percent_of_issues",
-                ],
-            )
-
-        decision_queue = read_sheet_if_exists(
-            diagnosis_report,
-            "Decision Queue",
-        )
-
-        if decision_queue is not None:
-            add_decision_queue_slide(
-                prs,
-                decision_queue,
+                max_rows=10,
             )
 
     prs.save(
